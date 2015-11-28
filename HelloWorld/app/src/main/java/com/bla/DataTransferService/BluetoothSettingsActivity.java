@@ -1,4 +1,4 @@
-package com.bla.helloworld;
+package com.bla.DataTransferService;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -24,7 +24,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //Fill text boxes
+        //Fill text boxes initially
         SharedPreferences settings = getPreferences(0);
         String deviceName = settings.getString("deviceName", "");
         String passphrase = settings.getString("passphrase", "");

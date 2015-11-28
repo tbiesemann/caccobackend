@@ -1,4 +1,4 @@
-package com.bla.helloworld;
+package com.bla.DataTransferService;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

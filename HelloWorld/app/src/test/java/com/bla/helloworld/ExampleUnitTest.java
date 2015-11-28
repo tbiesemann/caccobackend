@@ -1,4 +1,4 @@
-package com.bla.helloworld;
+package com.bla.DataTransferService;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.bla.helloworld;
+package com.bla.DataTransferService;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -45,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
         {
             case (R.id.menu_bluetooth):
                 this.startActivity(new Intent(this, BluetoothSettingsActivity.class));
+                return true;
+            case (R.id.menu_upload):
+                this.startActivity(new Intent(this, UploadSettingsActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
