@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -23,14 +24,40 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final Button button = (Button) findViewById(R.id.btnTestBluetoothConnectionn);
-        button.setOnClickListener(new View.OnClickListener() {
+        //Fill text boxes
+        SharedPreferences settings = getPreferences(0);
+        String deviceName = settings.getString("deviceName", "");
+        String passphrase = settings.getString("passphrase", "");
+        EditText txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
+        txtBluetoothDeviceName.setText(deviceName);
+        EditText txtBluetoothPassphrase = (EditText) findViewById(R.id.txtBluetoothPassphrase);
+        txtBluetoothPassphrase.setText(passphrase);
+
+
+        final Button btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnectionn);
+        btnTestConnection.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                button.setText("Testing Connection...");
+                btnTestConnection.setText("Testing Connection...");
                 testConnection();
                 // Perform action on click
             }
         });
+
+        final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
+        btnSaveSettings.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                SharedPreferences settings = getPreferences(0);
+                String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
+                String passphrase = ((EditText) findViewById(R.id.txtBluetoothPassphrase)).getText().toString();
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("deviceName", deviceName);
+                editor.putString("passphrase", passphrase);
+                editor.commit();
+                btnSaveSettings.setText("Saved...");
+            }
+        });
+
+
 
         mReceiver = new BroadcastReceiver() {
             @Override
