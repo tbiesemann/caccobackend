@@ -4,22 +4,12 @@ import com.creativityapps.gmailbackgroundlibrary.BackgroundMail;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-
-import android.content.Context;
-import android.widget.Toast;
 
 public class UploadSettingsActivity extends AppCompatActivity {
 
