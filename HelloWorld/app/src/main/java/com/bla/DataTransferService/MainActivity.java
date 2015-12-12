@@ -1,6 +1,8 @@
 package com.bla.DataTransferService;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -9,8 +11,11 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
+import android.widget.EditText;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
+    CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,14 +24,43 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+        timer = createTimer();
+
+    }
+
+    private CountDownTimer createTimer(){
+        SharedPreferences settings = getPreferences(0);
+        String interval = settings.getString("interval", "12");
+        long milliseconds = Integer.parseInt(interval) * 60 * 60 * 1000;
+
+
+
+        System.out.print("Starting timer for next transmission in " + milliseconds + " milliseconds");
+
+        CountDownTimer timer = new CountDownTimer(milliseconds, 1000) {
+            public void onTick(long milliseconds) {
+                int seconds = (int) (milliseconds / 1000) % 60 ;
+                int minutes = (int) ((milliseconds / (1000*60)) % 60);
+                int hours   = (int) ((milliseconds / (1000*60*60)) % 24);
+                String remainingDuration = "" + hours + ":" + minutes + ":" + seconds;
+                updateTimer(remainingDuration);
             }
-        });
+            public void onFinish() {
+                startDataTransmission();
+            }
+        };
+
+        timer.start();
+        return timer;
+    }
+
+    private void updateTimer(String remainingDuration){
+        TextView txtNextTransmissionDuration = (TextView) findViewById(R.id.txtNextTransmissionDuration);
+        txtNextTransmissionDuration.setText(remainingDuration);
+    }
+
+    private void startDataTransmission(){
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     @Override
