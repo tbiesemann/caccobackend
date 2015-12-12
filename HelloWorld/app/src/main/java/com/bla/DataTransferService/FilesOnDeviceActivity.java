@@ -54,27 +54,14 @@ public class FilesOnDeviceActivity extends AppCompatActivity {
 
         FileService fileService = new FileService(this);
         ArrayList<String> files = fileService.getFilesFromDisk();
-        files.add("some_dummy_file.txt");
 
-
-//        ArrayList valueList = new ArrayList<String>();
-//        for (int i = 0; i < 20; i++) {
-//            valueList.add("value" + i);
-//        }
-        //   ListAdapter adapter = new ArrayAdapter(getApplicationContext(), R.layout.file_list_item, valueList);
-
-        //  mAdapter = new SimpleCursorAdapter(this,R.layout.file_list_item, null,fromColumns, toViews, 0);
-
-       //ArrayAdapter adapter = new ArrayAdapter<String>(this, R.layout.file_list_item, R.id.txtFileName, valueList)
+        for (int i = 0; i < 20; i++) {
+            files.add("some_dummy_file" + i + ".txt");
+        }
         MyArrayAdapter adapter = new MyArrayAdapter(this, R.layout.file_list_item, R.id.txtFileName, files);
 
-
-
         final ListView lv = (ListView) findViewById(R.id.listView);
-
         lv.setAdapter(adapter);
-
-
     }
 
 
