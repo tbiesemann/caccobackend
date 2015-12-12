@@ -49,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
             case (R.id.menu_upload):
                 this.startActivity(new Intent(this, UploadSettingsActivity.class));
                 return true;
+            case (R.id.menu_general):
+                this.startActivity(new Intent(this, GeneralSettingsActivity.class));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

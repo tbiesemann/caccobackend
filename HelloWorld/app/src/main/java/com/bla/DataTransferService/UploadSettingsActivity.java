@@ -26,12 +26,15 @@ public class UploadSettingsActivity extends AppCompatActivity {
         String gmailAddress = settings.getString("gmailAddress", "kit.aqua.01@gmail.com");
         String gmailPassword = settings.getString("gmailPassword", "");
         String recipient = settings.getString("recipient", "kit.aqua@trash-mail.com");
+        String interval = settings.getString("interval", "12");
         EditText txtGmailAddress = (EditText) findViewById(R.id.txtGmailAddress);
         txtGmailAddress.setText(gmailAddress);
         EditText txtGmailPassword = (EditText) findViewById(R.id.txtGmailPassword);
         txtGmailPassword.setText(gmailPassword);
         EditText txtRecipient = (EditText) findViewById(R.id.txtRecipient);
         txtRecipient.setText(recipient);
+        EditText txtInterval = (EditText) findViewById(R.id.txtInterval);
+        txtInterval.setText(interval);
 
         final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
         btnSaveSettings.setOnClickListener(new View.OnClickListener() {
@@ -40,10 +43,12 @@ public class UploadSettingsActivity extends AppCompatActivity {
                 String gmailAddress = ((EditText) findViewById(R.id.txtGmailAddress)).getText().toString();
                 String gmailPassword = ((EditText) findViewById(R.id.txtGmailPassword)).getText().toString();
                 String recipient = ((EditText) findViewById(R.id.txtRecipient)).getText().toString();
+                String interval = ((EditText) findViewById(R.id.txtInterval)).getText().toString();
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("gmailAddress", gmailAddress);
                 editor.putString("gmailPassword", gmailPassword);
                 editor.putString("recipient", recipient);
+                editor.putString("interval", interval);
                 editor.commit();
                 btnSaveSettings.setText("Saved...");
             }
