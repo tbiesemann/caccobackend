@@ -18,7 +18,9 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //Fill text boxes initially
-        SharedPreferences settings = getPreferences(0);
+
+
+        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String locationID = settings.getString("locationID", "Regenbecken42");
         EditText txtLocationID = (EditText) findViewById(R.id.txtLocationID);
         txtLocationID.setText(locationID);
@@ -26,7 +28,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
         btnSaveSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                SharedPreferences settings = getPreferences(0);
+                SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
                 String locationID = ((EditText) findViewById(R.id.txtLocationID)).getText().toString();
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("locationID", locationID);

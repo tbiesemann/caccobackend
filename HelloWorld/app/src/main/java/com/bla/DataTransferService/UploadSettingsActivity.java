@@ -22,7 +22,7 @@ public class UploadSettingsActivity extends AppCompatActivity {
 
 
         //Fill text boxes initially
-        SharedPreferences settings = getPreferences(0);
+        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String gmailAddress = settings.getString("gmailAddress", "kit.aqua.01@gmail.com");
         String gmailPassword = settings.getString("gmailPassword", "");
         String recipient = settings.getString("recipient", "kit.aqua@trash-mail.com");
@@ -39,7 +39,7 @@ public class UploadSettingsActivity extends AppCompatActivity {
         final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
         btnSaveSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                SharedPreferences settings = getPreferences(0);
+                SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
                 String gmailAddress = ((EditText) findViewById(R.id.txtGmailAddress)).getText().toString();
                 String gmailPassword = ((EditText) findViewById(R.id.txtGmailPassword)).getText().toString();
                 String recipient = ((EditText) findViewById(R.id.txtRecipient)).getText().toString();

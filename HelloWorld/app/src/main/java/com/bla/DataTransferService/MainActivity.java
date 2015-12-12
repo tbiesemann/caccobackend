@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private CountDownTimer createTimer(){
-        SharedPreferences settings = getPreferences(0);
+        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String interval = settings.getString("interval", "12");
         long milliseconds = Integer.parseInt(interval) * 60 * 60 * 1000;
 

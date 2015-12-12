@@ -25,7 +25,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //Fill text boxes initially
-        SharedPreferences settings = getPreferences(0);
+        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String deviceName = settings.getString("deviceName", "");
         String passphrase = settings.getString("passphrase", "");
         EditText txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
@@ -46,7 +46,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
         btnSaveSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                SharedPreferences settings = getPreferences(0);
+                SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
                 String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
                 String passphrase = ((EditText) findViewById(R.id.txtBluetoothPassphrase)).getText().toString();
                 SharedPreferences.Editor editor = settings.edit();
