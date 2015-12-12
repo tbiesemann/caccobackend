@@ -86,7 +86,7 @@ public class UploadSettingsActivity extends AppCompatActivity {
 
     private String createTestAttachment() {
         FileService fileService = new FileService(this);
-        String sFilePath = fileService.writeFile("test.txt", "ding dong");
+        String sFilePath = fileService.writeToFile("test.txt", "ding dong");
         return sFilePath;
 
     }

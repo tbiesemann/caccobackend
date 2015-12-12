@@ -10,6 +10,8 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileService {
 
@@ -42,7 +44,13 @@ public class FileService {
     }
 
 
-    public String writeFile(String sFileName,String sBody) {
+    /**
+     * If file already exists, content is appended to existing file
+     * @param sFileName
+     * @param sBody
+     * @return
+     */
+    public String writeToFile(String sFileName,String sBody) {
         String sWorkingDirectory = getWorkingDirectory();
         String sFilePath = "";
 
@@ -64,5 +72,24 @@ public class FileService {
         }
         return sFilePath;
     }
+
+
+    public ArrayList<String> getFilesFromDisk(){
+        ArrayList<String> result = new ArrayList<String>();
+        String name;
+        String sWorkingDirectory = getWorkingDirectory();
+
+        File dir = new File(sWorkingDirectory);
+        File[] files = dir.listFiles();
+        for (File inFile : files) {
+            if (inFile.isFile()) {
+                name = inFile.getName();
+                result.add(name);
+            }
+        }
+
+        return result;
+    }
+
 
 }

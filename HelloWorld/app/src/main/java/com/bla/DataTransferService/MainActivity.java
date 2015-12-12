@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -27,7 +28,16 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         this.createTimer();
         this.registerToSettingsChange();
+
+        final Button btnStartTransmission = (Button) findViewById(R.id.btnStartTransmission);
+        btnStartTransmission.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                startDataTransmission();
+            }
+        });
     }
+
+
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key == "interval") {
@@ -98,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 return true;
             case (R.id.menu_general):
                 this.startActivity(new Intent(this, GeneralSettingsActivity.class));
+                return true;
+            case (R.id.menu_files):
+                this.startActivity(new Intent(this, FilesOnDeviceActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
