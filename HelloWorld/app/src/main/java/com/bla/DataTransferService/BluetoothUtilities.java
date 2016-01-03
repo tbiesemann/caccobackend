@@ -60,7 +60,8 @@ public class BluetoothUtilities {
         try {
             uuid = device.getUuids()[0].getUuid();
         } catch (NullPointerException e) {
-            uuid = UUID.fromString("00000000-0000-0000-0000-000000000001"); //default UUID
+            uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for HC06 bluetooth devices
+
         }
         return uuid;
     }
