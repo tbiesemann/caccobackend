@@ -130,38 +130,17 @@ public class BluetoothUtilities {
         return null;
     }
 
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            // When discovery finds a device
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Get the BluetoothDevice object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String discoveredDeviceName = device.getName();
-
-                if (mDeviceName.equals(discoveredDeviceName)) {
-                    mActivity.log("Device " + discoveredDeviceName + " found");
-                } else {
-                    mActivity.log("Device " + discoveredDeviceName + " found but does not match " + mDeviceName);
-                }
-            }
-        }
-    };
 
 
     public void destroy() {
-        if (mBluetoothAdapter != null) {
-            mBluetoothAdapter.cancelDiscovery();
-        }
+
         if (this.mSocket != null) {
             try {
                 this.mSocket.close();
             } catch (IOException ex) {
             }
         }
-        mActivity.unregisterReceiver(mReceiver);
+
     }
 
 
