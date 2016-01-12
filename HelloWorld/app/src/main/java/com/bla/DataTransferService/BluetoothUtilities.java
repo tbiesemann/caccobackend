@@ -3,11 +3,6 @@ package com.bla.DataTransferService;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.ParcelUuid;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,20 +13,35 @@ import java.util.Set;
 import java.util.UUID;
 
 
+interface ILogger {
+    void onLog(String msg);
+}
+
 public class BluetoothUtilities {
 
-    String mDeviceName;
     BluetoothAdapter mBluetoothAdapter;
-    BluetoothSettingsActivity mActivity;
     private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
     private OutputStream mOutputStream;
     private InputStream mInputStream;
 
-    public BluetoothUtilities(String deviceName, BluetoothSettingsActivity activity) {
-        mDeviceName = deviceName;
-        mActivity = activity;
+
+    ILogger logger;
+    public void setLogger(ILogger listener){
+        logger = listener;
     }
+
+    private void log(String text){
+        if (this.logger != null){
+            this.logger.onLog(text);
+        }
+    }
+
+    public BluetoothUtilities() {
+    }
+
+
+
 
 
     public BluetoothAdapter getBluetoothAdapter() {
@@ -44,10 +54,10 @@ public class BluetoothUtilities {
     public void enableBluetoothAdapter() {
         BluetoothAdapter adapter = this.getBluetoothAdapter();
         if (!adapter.isEnabled()) {
-            this.mActivity.log("Enabling Bluetooth adapter...");
+            this.log("Enabling Bluetooth adapter...");
             adapter.enable();
         }
-        this.mActivity.log("Bluetooth adapter is enabled");
+        this.log("Bluetooth adapter is enabled");
     }
 
 
@@ -57,35 +67,37 @@ public class BluetoothUtilities {
     }
 
 
+
+
     public void establishConnection(String deviceName) {
         BluetoothDevice device;
         device = this.getDeviceByName(deviceName);
         if (device == null) {
-            this.mActivity.log("Cannot find a device with name " + deviceName);
+            this.log("Cannot find a device with name " + deviceName);
             return;
         }
-        this.mActivity.log("Device " + deviceName + " found");
+        this.log("Device " + deviceName + " found");
 
 
         UUID uuid = this.getDeviceUUID(device);
 
 
         try {
-            this.mActivity.log("Establishing connection with device " + device.getName() + " and address " + device.getAddress() + " and UUID " + uuid.toString());
+            this.log("Establishing connection with device " + device.getName() + " and address " + device.getAddress() + " and UUID " + uuid.toString());
             mSocket = device.createRfcommSocketToServiceRecord(uuid);
             mSocket.connect();
         } catch (IOException e) {
-            this.mActivity.log("Cannot establish connection - error ocurred " + e.toString());
+            this.log("Cannot establish connection - error ocurred " + e.toString());
             return;
         }
 
-        this.mActivity.log("Bluetooth connection is established");
+        this.log("Bluetooth connection is established");
 
         try {
             mOutputStream = mSocket.getOutputStream();
             mInputStream = mSocket.getInputStream();
         } catch (IOException e) {
-            this.mActivity.log("Error getting streams..." + e.toString());
+            this.log("Error getting streams..." + e.toString());
         }
 
         //  beginListenForData();
@@ -94,7 +106,7 @@ public class BluetoothUtilities {
 
     public void sendData(String data) throws IOException {
         if (mOutputStream == null){
-            this.mActivity.log("Cannot send data - connection is not established");
+            this.log("Cannot send data - connection is not established");
             return;
         }
         String msg = data + "\n";

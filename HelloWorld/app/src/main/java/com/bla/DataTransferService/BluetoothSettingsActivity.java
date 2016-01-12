@@ -65,17 +65,22 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         btnShowPairedDevices.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 List<String> devices = bluetooth.getPairedDevicesAsString();
-                for(String device : devices){
+                for (String device : devices) {
                     log(device);
                 }
             }
         });
 
 
-        final EditText inputField = (EditText) findViewById(R.id.txtBluetoothDeviceName);
-        this.bluetooth = new BluetoothUtilities(inputField.getText().toString(), this);
-    }
+        this.bluetooth = new BluetoothUtilities();
 
+        this.bluetooth.setLogger(new ILogger() {
+            @Override
+            public void onLog(String text) {
+                log(text);
+            }
+        });
+    }
 
 
     public void log(String text) {
@@ -83,8 +88,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         console.setText(console.getText() + "\n" + text);
         System.out.println(text);
     }
-
-
 
 
     private void testConnection() {
@@ -102,7 +105,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
     private void sendData() {
         try {
             this.bluetooth.sendData("Hello from the Aqua App");
-        } catch (IOException e){
+        } catch (IOException e) {
             this.log("Cannot send data - exception ocurred" + e.toString());
         }
     }
