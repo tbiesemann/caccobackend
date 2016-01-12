@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class TerminalActivity extends AppCompatActivity {
 
-    EditText myTextbox;
+    EditText txtDataForSending;
     TextView txtConsole;
     BluetoothUtilities bluetooth;
 
@@ -24,7 +24,7 @@ public class TerminalActivity extends AppCompatActivity {
 
         Button sendButton = (Button) findViewById(R.id.send);
 
-        myTextbox = (EditText) findViewById(R.id.entry);
+        txtDataForSending = (EditText) findViewById(R.id.entry);
         txtConsole = (TextView) findViewById(R.id.txtConsole);
 
         //Send Button
@@ -32,6 +32,7 @@ public class TerminalActivity extends AppCompatActivity {
             public void onClick(View v) {
                 try {
                     sendData();
+                    txtDataForSending.setText("");
                 } catch (IOException ex) {
                     log("Error sending data:" + ex.toString());
                 }
@@ -66,7 +67,7 @@ public class TerminalActivity extends AppCompatActivity {
 
 
     void sendData() throws IOException {
-        String text = myTextbox.getText().toString();
+        String text = txtDataForSending.getText().toString();
         this.bluetooth.sendData(text);
     }
 

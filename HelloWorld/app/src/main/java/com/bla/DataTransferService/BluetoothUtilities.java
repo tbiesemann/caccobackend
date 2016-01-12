@@ -16,16 +16,20 @@ import java.util.UUID;
 
 interface ILogger {
     void onLog(String msg);
+
     void onLogAsync(String msg);
 }
 
 public class BluetoothUtilities {
 
     BluetoothAdapter mBluetoothAdapter;
-    private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
     private OutputStream mOutputStream;
     private InputStream mInputStream;
+    public boolean useWindowsLineEndings = false;
+
+    public BluetoothUtilities() {
+    }
 
 
     ILogger logger;
@@ -44,9 +48,6 @@ public class BluetoothUtilities {
         if (this.logger != null) {
             this.logger.onLogAsync(text);
         }
-    }
-
-    public BluetoothUtilities() {
     }
 
 
@@ -114,9 +115,6 @@ public class BluetoothUtilities {
     volatile boolean stopWorker;
 
     void beginListenForData() {
-        final Handler handler = new Handler();
-        final byte delimiter = 10; //This is the ASCII code for a newline character
-
         stopWorker = false;
         readBufferPosition = 0;
         readBuffer = new byte[1024];
@@ -130,18 +128,13 @@ public class BluetoothUtilities {
                             mInputStream.read(packetBytes);
                             for (int i = 0; i < bytesAvailable; i++) {
                                 byte b = packetBytes[i];
-                                if (b == delimiter) {
+
+                                if ( ((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 10) && (packetBytes[i + 1] == 13)) ){
                                     byte[] encodedBytes = new byte[readBufferPosition];
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
-
                                     logAsync(data);
-//                                    handler.post(new Runnable() {
-//                                        public void run() {
-//                                            log(data);
-//                                        }
-//                                    });
                                 } else {
                                     readBuffer[readBufferPosition++] = b;
                                 }
@@ -162,7 +155,12 @@ public class BluetoothUtilities {
             this.log("Cannot send data - connection is not established");
             return;
         }
-        String msg = data + "\n";
+        String msg;
+        if (this.useWindowsLineEndings) {
+            msg = data + "\r\n";
+        } else {
+            msg = data + "\n";
+        }
         mOutputStream.write(msg.getBytes());
         this.log("Send:" + data);
     }

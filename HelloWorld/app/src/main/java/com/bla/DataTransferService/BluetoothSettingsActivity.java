@@ -7,13 +7,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.util.List;
 
 public class BluetoothSettingsActivity extends AppCompatActivity {
+
+    EditText txtBluetoothDeviceName;
+    CheckBox cbxUseWindowsLineEndings;
+    Button btnTestConnection;
 
     private BluetoothUtilities bluetooth;
 
@@ -24,13 +28,18 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //Fill text boxes initially
+        txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
+        cbxUseWindowsLineEndings = (CheckBox) findViewById(R.id.cbxUseRN);
+        btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnection);
+
+        //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String deviceName = settings.getString("deviceName", "");
-        EditText txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
         txtBluetoothDeviceName.setText(deviceName);
+        boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
+        cbxUseWindowsLineEndings.setChecked(useWindowsLineEndings);
 
-        final Button btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnection);
+
         btnTestConnection.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 btnTestConnection.setText("Opening Connection...");
@@ -44,9 +53,14 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         btnSaveSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
-                String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
                 SharedPreferences.Editor editor = settings.edit();
+
+                String deviceName = txtBluetoothDeviceName.getText().toString();
                 editor.putString("deviceName", deviceName);
+
+                boolean useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
+                editor.putBoolean("useWindowsLineEndings", useWindowsLineEndings);
+
                 editor.commit();
                 btnSaveSettings.setText("Saved...");
             }
@@ -64,8 +78,14 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         });
 
 
-        this.bluetooth = BluetoothUtilitiesFactory.getBluetoothUtilities();
+        this.createBluetoothUtilities();
+    }
 
+
+    private void createBluetoothUtilities(){
+
+        this.bluetooth = BluetoothUtilitiesFactory.getBluetoothUtilities();
+        this.bluetooth.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
         this.bluetooth.setLogger(new ILogger() {
             @Override
             public void onLog(String text) {
@@ -85,6 +105,9 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
 
     private void testConnection() {
+
+        this.bluetooth.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
+
         //Make sure bluetooth is turned on
         BluetoothAdapter mBluetoothAdapter = this.bluetooth.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
