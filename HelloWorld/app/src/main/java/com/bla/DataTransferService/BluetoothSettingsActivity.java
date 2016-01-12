@@ -33,20 +33,12 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         final Button btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnection);
         btnTestConnection.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                btnTestConnection.setText("Testing Connection...");
+                btnTestConnection.setText("Opening Connection...");
                 testConnection();
-                btnTestConnection.setText("Test Open Connection");
+                btnTestConnection.setText("Open Connection");
             }
         });
 
-        final Button btnSendData = (Button) findViewById(R.id.btnSendData);
-        btnSendData.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                btnTestConnection.setText("Sending Data...");
-                sendData();
-                btnTestConnection.setText("Test Send Data");
-            }
-        });
 
         final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
         btnSaveSettings.setOnClickListener(new View.OnClickListener() {
@@ -79,6 +71,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
             public void onLog(String text) {
                 log(text);
             }
+            public void onLogAsync(String text){
+            }
         });
     }
 
@@ -102,13 +96,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         this.bluetooth.establishConnection(deviceName);
     }
 
-    private void sendData() {
-        try {
-            this.bluetooth.sendData("Hello from the Aqua App");
-        } catch (IOException e) {
-            this.log("Cannot send data - exception ocurred" + e.toString());
-        }
-    }
+
 
     @Override
     public void onDestroy() {

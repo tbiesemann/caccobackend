@@ -16,6 +16,7 @@ import java.util.UUID;
 
 interface ILogger {
     void onLog(String msg);
+    void onLogAsync(String msg);
 }
 
 public class BluetoothUtilities {
@@ -36,6 +37,12 @@ public class BluetoothUtilities {
     private void log(String text) {
         if (this.logger != null) {
             this.logger.onLog(text);
+        }
+    }
+
+    private void logAsync(String text) {
+        if (this.logger != null) {
+            this.logger.onLogAsync(text);
         }
     }
 
@@ -129,7 +136,7 @@ public class BluetoothUtilities {
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
 
-                                    log(data);
+                                    logAsync(data);
 //                                    handler.post(new Runnable() {
 //                                        public void run() {
 //                                            log(data);

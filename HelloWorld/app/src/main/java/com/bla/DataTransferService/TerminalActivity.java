@@ -11,8 +11,8 @@ import java.io.IOException;
 
 public class TerminalActivity extends AppCompatActivity {
 
-    TextView myLabel;
     EditText myTextbox;
+    TextView txtConsole;
     BluetoothUtilities bluetooth;
 
 
@@ -23,9 +23,9 @@ public class TerminalActivity extends AppCompatActivity {
 
 
         Button sendButton = (Button) findViewById(R.id.send);
-        myLabel = (TextView) findViewById(R.id.label);
-        myTextbox = (EditText) findViewById(R.id.entry);
 
+        myTextbox = (EditText) findViewById(R.id.entry);
+        txtConsole = (TextView) findViewById(R.id.txtConsole);
 
         //Send Button
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -44,6 +44,14 @@ public class TerminalActivity extends AppCompatActivity {
             @Override
             public void onLog(String text) {
                 log(text);
+            }
+            public void onLogAsync(String text) {
+                final String myText = text;
+                txtConsole.post(new Runnable() {
+                    public void run() {
+                        log(myText);
+                    }
+                });
             }
         });
 

@@ -35,7 +35,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Test Open Connection"
+        android:text="Open Connection"
         android:id="@+id/btnTestBluetoothConnection"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -61,11 +61,11 @@
         android:id="@+id/txtConsole"
         android:minLines="@integer/consoleLines"
         android:lines="10"
-        android:layout_below="@+id/btnReadData"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/txtBluetoothDeviceName"
-        android:layout_alignEnd="@+id/txtBluetoothDeviceName" />
+        android:layout_alignEnd="@+id/txtBluetoothDeviceName"
+        android:layout_below="@+id/btnTestBluetoothConnection" />
 
     <Button
         android:layout_width="wrap_content"
@@ -75,27 +75,5 @@
         android:layout_above="@+id/btnTestBluetoothConnection"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Test Send Data"
-        android:id="@+id/btnSendData"
-        android:layout_below="@+id/btnShowPairedDevices"
-        android:layout_toRightOf="@+id/btnTestBluetoothConnection"
-        android:layout_alignRight="@+id/txtBluetoothDeviceName"
-        android:layout_alignEnd="@+id/txtBluetoothDeviceName"
-        android:layout_alignBottom="@+id/btnTestBluetoothConnection" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Test Read Data"
-        android:id="@+id/btnReadData"
-        android:layout_below="@+id/btnTestBluetoothConnection"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_toLeftOf="@+id/btnSendData"
-        android:layout_toStartOf="@+id/btnSendData" />
 
 </RelativeLayout>
