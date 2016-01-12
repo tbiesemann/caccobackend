@@ -10,6 +10,8 @@ import android.content.IntentFilter;
 import android.os.ParcelUuid;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,8 @@ public class BluetoothUtilities {
     BluetoothSettingsActivity mActivity;
     private BluetoothDevice mDevice;
     private BluetoothSocket mSocket;
+    private OutputStream mOutputStream;
+    private InputStream mInputStream;
 
     public BluetoothUtilities(String deviceName, BluetoothSettingsActivity activity) {
         mDeviceName = deviceName;
@@ -47,71 +51,54 @@ public class BluetoothUtilities {
     }
 
 
-    public void startDeviceDiscovery() {
-        this.mActivity.log("Starting device discovery...");
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        mActivity.registerReceiver(mReceiver, filter);
-        mBluetoothAdapter.startDiscovery();
-    }
-
-
-    public UUID getDeviceUUID(BluetoothDevice device){
-        UUID uuid;
-        try {
-            ParcelUuid[] uuids = device.getUuids();
-            uuid = uuids[0].getUuid();
-        } catch (NullPointerException e) {
-            uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for HC06 bluetooth devices
-
-        }
+    public UUID getDeviceUUID(BluetoothDevice device) {
+        UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //Standard SerialPortService ID
         return uuid;
-    }
-
-    public UUID[] getDeviceUUIDs(BluetoothDevice device){
-        UUID[] result;
-        try {
-            ParcelUuid[] uuids = device.getUuids();
-            result = new UUID[uuids.length];
-            for (int i = 0; i < uuids.length; i++) {
-                result[i] = uuids[i].getUuid();
-            }
-        } catch (NullPointerException e) {
-            result = new UUID[1];
-            result[0] = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for HC06 bluetooth devices
-        }
-
-        result = new UUID[1];
-        result[0] = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for everythign except android ??
-        return result;
     }
 
 
     public void establishConnection(String deviceName) {
         BluetoothDevice device;
         device = this.getDeviceByName(deviceName);
-        if (device == null){
+        if (device == null) {
             this.mActivity.log("Cannot find a device with name " + deviceName);
             return;
         }
         this.mActivity.log("Device " + deviceName + " found");
 
-//        UUID uuid = this.getDeviceUUID(device);
-        UUID[] uuids = this.getDeviceUUIDs(device);
+
+        UUID uuid = this.getDeviceUUID(device);
 
 
-        for (int i = 0; i < uuids.length; i++) {
-            try {
-
-                this.mActivity.log("Establishing connection with device " + device.getName() + " and address " + device.getAddress() + " and UUID " + uuids[i].toString());
-
-                mSocket = device.createRfcommSocketToServiceRecord(uuids[i]);
-                mSocket.connect();
-                break;
-            } catch (IOException e) {
-                this.mActivity.log("Cannot establish connection - error ocurred " + e.toString());
-            }
+        try {
+            this.mActivity.log("Establishing connection with device " + device.getName() + " and address " + device.getAddress() + " and UUID " + uuid.toString());
+            mSocket = device.createRfcommSocketToServiceRecord(uuid);
+            mSocket.connect();
+        } catch (IOException e) {
+            this.mActivity.log("Cannot establish connection - error ocurred " + e.toString());
+            return;
         }
+
         this.mActivity.log("Bluetooth connection is established");
+
+        try {
+            mOutputStream = mSocket.getOutputStream();
+            mInputStream = mSocket.getInputStream();
+        } catch (IOException e) {
+            this.mActivity.log("Error getting streams..." + e.toString());
+        }
+
+        //  beginListenForData();
+    }
+
+
+    public void sendData(String data) throws IOException {
+        if (mOutputStream == null){
+            this.mActivity.log("Cannot send data - connection is not established");
+            return;
+        }
+        String msg = data + "\n";
+        mOutputStream.write(msg.getBytes());
     }
 
 
@@ -135,7 +122,7 @@ public class BluetoothUtilities {
         if (pairedDevices.size() > 0) {
             for (BluetoothDevice device : pairedDevices) {
                 String deviceName = device.getName();
-                if (expectedDeviceName.equals(deviceName)){
+                if (expectedDeviceName.equals(deviceName)) {
                     return device;
                 }
             }

@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.List;
 
 public class BluetoothSettingsActivity extends AppCompatActivity {
@@ -29,12 +30,21 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         EditText txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
         txtBluetoothDeviceName.setText(deviceName);
 
-        final Button btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnectionn);
+        final Button btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnection);
         btnTestConnection.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 btnTestConnection.setText("Testing Connection...");
                 testConnection();
-                // Perform action on click
+                btnTestConnection.setText("Test Open Connection");
+            }
+        });
+
+        final Button btnSendData = (Button) findViewById(R.id.btnSendData);
+        btnSendData.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                btnTestConnection.setText("Sending Data...");
+                sendData();
+                btnTestConnection.setText("Test Send Data");
             }
         });
 
@@ -78,7 +88,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
 
     private void testConnection() {
-
         //Make sure bluetooth is turned on
         BluetoothAdapter mBluetoothAdapter = this.bluetooth.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
@@ -88,10 +97,15 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         this.bluetooth.enableBluetoothAdapter();
         String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
         this.bluetooth.establishConnection(deviceName);
-
     }
-;
 
+    private void sendData() {
+        try {
+            this.bluetooth.sendData("Hello from the Aqua App");
+        } catch (IOException e){
+            this.log("Cannot send data - exception ocurred" + e.toString());
+        }
+    }
 
     @Override
     public void onDestroy() {

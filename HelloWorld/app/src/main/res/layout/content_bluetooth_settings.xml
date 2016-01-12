@@ -35,11 +35,13 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Test Bluetooth Connection"
-        android:id="@+id/btnTestBluetoothConnectionn"
-        android:layout_below="@+id/btnSaveSettings"
+        android:text="Test Open Connection"
+        android:id="@+id/btnTestBluetoothConnection"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/btnShowPairedDevices"
+        android:layout_toStartOf="@+id/btnShowPairedDevices"
+        android:layout_below="@+id/btnSaveSettings" />
 
     <Button
         android:layout_width="wrap_content"
@@ -48,7 +50,9 @@
         android:id="@+id/btnSaveSettings"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/txtBluetoothDeviceName" />
+        android:layout_below="@+id/txtBluetoothDeviceName"
+        android:layout_toLeftOf="@+id/btnShowPairedDevices"
+        android:layout_toStartOf="@+id/btnShowPairedDevices" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -57,17 +61,41 @@
         android:id="@+id/txtConsole"
         android:minLines="@integer/consoleLines"
         android:lines="10"
-        android:layout_below="@+id/btnTestBluetoothConnectionn"
-        android:layout_alignRight="@+id/btnTestBluetoothConnectionn"
-        android:layout_alignEnd="@+id/btnTestBluetoothConnectionn" />
+        android:layout_below="@+id/btnReadData"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/txtBluetoothDeviceName"
+        android:layout_alignEnd="@+id/txtBluetoothDeviceName" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Show paired devices"
         android:id="@+id/btnShowPairedDevices"
-        android:layout_above="@+id/btnTestBluetoothConnectionn"
+        android:layout_above="@+id/btnTestBluetoothConnection"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test Send Data"
+        android:id="@+id/btnSendData"
+        android:layout_below="@+id/btnShowPairedDevices"
+        android:layout_toRightOf="@+id/btnTestBluetoothConnection"
+        android:layout_alignRight="@+id/txtBluetoothDeviceName"
+        android:layout_alignEnd="@+id/txtBluetoothDeviceName"
+        android:layout_alignBottom="@+id/btnTestBluetoothConnection" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Test Read Data"
+        android:id="@+id/btnReadData"
+        android:layout_below="@+id/btnTestBluetoothConnection"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/btnSendData"
+        android:layout_toStartOf="@+id/btnSendData" />
 
 </RelativeLayout>
