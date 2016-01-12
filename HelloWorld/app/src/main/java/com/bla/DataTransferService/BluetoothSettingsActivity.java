@@ -72,7 +72,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         });
 
 
-        this.bluetooth = new BluetoothUtilities();
+        this.bluetooth = BluetoothUtilitiesFactory.getBluetoothUtilities();
 
         this.bluetooth.setLogger(new ILogger() {
             @Override
@@ -113,7 +113,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        this.bluetooth.destroy();
     }
 
 }
