@@ -3,6 +3,7 @@ package com.bla.DataTransferService;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,21 +28,19 @@ public class BluetoothUtilities {
 
 
     ILogger logger;
-    public void setLogger(ILogger listener){
+
+    public void setLogger(ILogger listener) {
         logger = listener;
     }
 
-    private void log(String text){
-        if (this.logger != null){
+    private void log(String text) {
+        if (this.logger != null) {
             this.logger.onLog(text);
         }
     }
 
     public BluetoothUtilities() {
     }
-
-
-
 
 
     public BluetoothAdapter getBluetoothAdapter() {
@@ -65,8 +64,6 @@ public class BluetoothUtilities {
         UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //Standard SerialPortService ID
         return uuid;
     }
-
-
 
 
     public void establishConnection(String deviceName) {
@@ -100,17 +97,67 @@ public class BluetoothUtilities {
             this.log("Error getting streams..." + e.toString());
         }
 
-        //  beginListenForData();
+        beginListenForData();
+    }
+
+
+    Thread workerThread;
+    byte[] readBuffer;
+    int readBufferPosition;
+    volatile boolean stopWorker;
+
+    void beginListenForData() {
+        final Handler handler = new Handler();
+        final byte delimiter = 10; //This is the ASCII code for a newline character
+
+        stopWorker = false;
+        readBufferPosition = 0;
+        readBuffer = new byte[1024];
+        workerThread = new Thread(new Runnable() {
+            public void run() {
+                while (!Thread.currentThread().isInterrupted() && !stopWorker) {
+                    try {
+                        int bytesAvailable = mInputStream.available();
+                        if (bytesAvailable > 0) {
+                            byte[] packetBytes = new byte[bytesAvailable];
+                            mInputStream.read(packetBytes);
+                            for (int i = 0; i < bytesAvailable; i++) {
+                                byte b = packetBytes[i];
+                                if (b == delimiter) {
+                                    byte[] encodedBytes = new byte[readBufferPosition];
+                                    System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
+                                    final String data = new String(encodedBytes, "US-ASCII");
+                                    readBufferPosition = 0;
+
+                                    log(data);
+//                                    handler.post(new Runnable() {
+//                                        public void run() {
+//                                            log(data);
+//                                        }
+//                                    });
+                                } else {
+                                    readBuffer[readBufferPosition++] = b;
+                                }
+                            }
+                        }
+                    } catch (IOException ex) {
+                        stopWorker = true;
+                    }
+                }
+            }
+        });
+        workerThread.start();
     }
 
 
     public void sendData(String data) throws IOException {
-        if (mOutputStream == null){
+        if (mOutputStream == null) {
             this.log("Cannot send data - connection is not established");
             return;
         }
         String msg = data + "\n";
         mOutputStream.write(msg.getBytes());
+        this.log("Send:" + data);
     }
 
 
@@ -143,8 +190,22 @@ public class BluetoothUtilities {
     }
 
 
-
     public void destroy() {
+        stopWorker = true;
+
+        if (this.mOutputStream != null) {
+            try {
+                this.mOutputStream.close();
+            } catch (IOException ex) {
+            }
+        }
+
+        if (this.mInputStream != null) {
+            try {
+                mInputStream.close();
+            } catch (IOException ex) {
+            }
+        }
 
         if (this.mSocket != null) {
             try {
@@ -152,7 +213,6 @@ public class BluetoothUtilities {
             } catch (IOException ex) {
             }
         }
-
     }
 
 
