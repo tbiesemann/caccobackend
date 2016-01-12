@@ -26,11 +26,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         //Fill text boxes initially
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String deviceName = settings.getString("deviceName", "");
-        String passphrase = settings.getString("passphrase", "");
         EditText txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
         txtBluetoothDeviceName.setText(deviceName);
-        EditText txtBluetoothPassphrase = (EditText) findViewById(R.id.txtBluetoothPassphrase);
-        txtBluetoothPassphrase.setText(passphrase);
 
         final Button btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnectionn);
         btnTestConnection.setOnClickListener(new View.OnClickListener() {
@@ -46,10 +43,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
                 String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
-                String passphrase = ((EditText) findViewById(R.id.txtBluetoothPassphrase)).getText().toString();
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("deviceName", deviceName);
-                editor.putString("passphrase", passphrase);
                 editor.commit();
                 btnSaveSettings.setText("Saved...");
             }
@@ -91,8 +86,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
             return;
         }
         this.bluetooth.enableBluetoothAdapter();
-        this.bluetooth.startDeviceDiscovery();
-
+        String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
+        this.bluetooth.establishConnection(deviceName);
 
     }
 ;
@@ -102,8 +97,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         this.bluetooth.destroy();
-
-
     }
 
 }

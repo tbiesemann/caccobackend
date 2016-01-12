@@ -7,7 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.widget.EditText;
+import android.os.ParcelUuid;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,7 +58,8 @@ public class BluetoothUtilities {
     public UUID getDeviceUUID(BluetoothDevice device){
         UUID uuid;
         try {
-            uuid = device.getUuids()[0].getUuid();
+            ParcelUuid[] uuids = device.getUuids();
+            uuid = uuids[0].getUuid();
         } catch (NullPointerException e) {
             uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for HC06 bluetooth devices
 
@@ -66,19 +67,48 @@ public class BluetoothUtilities {
         return uuid;
     }
 
-    public void establishConnection(BluetoothDevice device) {
-        UUID uuid = this.getDeviceUUID(device);
-
-        this.mActivity.log("Establishing connection with device " + device.getName() + " and address " + device.getAddress() + " and UUID " + uuid.toString());
+    public UUID[] getDeviceUUIDs(BluetoothDevice device){
+        UUID[] result;
         try {
-            mSocket = device.createRfcommSocketToServiceRecord(uuid);
-            mSocket.connect();
-        } catch (IOException e) {
-            this.mActivity.log("Cannot establish connection - error ocurred " + e.toString());
+            ParcelUuid[] uuids = device.getUuids();
+            result = new UUID[uuids.length];
+            for (int i = 0; i < uuids.length; i++) {
+                result[i] = uuids[i].getUuid();
+            }
+        } catch (NullPointerException e) {
+            result = new UUID[1];
+            result[0] = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for HC06 bluetooth devices
+        }
+        return result;
+    }
+
+
+    public void establishConnection(String deviceName) {
+        BluetoothDevice device;
+        device = this.getDeviceByName(deviceName);
+        if (device == null){
+            this.mActivity.log("Cannot find a device with name " + deviceName);
             return;
         }
-        this.mActivity.log("Bluetooth connection is established");
+        this.mActivity.log("Device " + deviceName + " found");
 
+//        UUID uuid = this.getDeviceUUID(device);
+        UUID[] uuids = this.getDeviceUUIDs(device);
+
+
+        for (int i = 0; i < uuids.length; i++) {
+            try {
+
+                this.mActivity.log("Establishing connection with device " + device.getName() + " and address " + device.getAddress() + " and UUID " + uuids[i].toString());
+
+                mSocket = device.createRfcommSocketToServiceRecord(uuids[i]);
+                mSocket.connect();
+                break;
+            } catch (IOException e) {
+                this.mActivity.log("Cannot establish connection - error ocurred " + e.toString());
+            }
+        }
+        this.mActivity.log("Bluetooth connection is established");
     }
 
 
@@ -93,6 +123,21 @@ public class BluetoothUtilities {
             }
         }
         return result;
+    }
+
+
+    public BluetoothDevice getDeviceByName(String expectedDeviceName) {
+        BluetoothAdapter adapter = this.getBluetoothAdapter();
+        Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                String deviceName = device.getName();
+                if (expectedDeviceName.equals(deviceName)){
+                    return device;
+                }
+            }
+        }
+        return null;
     }
 
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
