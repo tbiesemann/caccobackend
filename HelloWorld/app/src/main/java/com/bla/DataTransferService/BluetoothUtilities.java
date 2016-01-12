@@ -79,6 +79,9 @@ public class BluetoothUtilities {
             result = new UUID[1];
             result[0] = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for HC06 bluetooth devices
         }
+
+        result = new UUID[1];
+        result[0] = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //default UUID for everythign except android ??
         return result;
     }
 
