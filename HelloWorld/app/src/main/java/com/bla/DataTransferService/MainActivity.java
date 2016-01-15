@@ -115,6 +115,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case (R.id.menu_terminal):
                 this.startActivity(new Intent(this, TerminalActivity.class));
                 return true;
+            case (R.id.menu_gdrive):
+                this.startActivity(new Intent(this, GDriveActivity.class));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

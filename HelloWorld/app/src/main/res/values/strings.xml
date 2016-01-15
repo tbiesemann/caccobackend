@@ -6,6 +6,7 @@
     <string name="menu_upload">Upload Settings</string>
     <string name="menu_general">General Settings</string>
     <string name="menu_terminal">Bluetooth Terminal</string>
+    <string name="menu_gdrive">Google Drive</string>
     <string name="title_activity_bluetooth_settings">Settings</string>
 
     <!-- Strings related to Settings -->

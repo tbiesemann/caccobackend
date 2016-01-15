@@ -6,4 +6,5 @@
     <item android:id="@+id/menu_upload" android:title="@string/menu_upload"/>
     <item android:id="@+id/menu_general" android:title="@string/menu_general"/>
     <item android:id="@+id/menu_terminal" android:title="@string/menu_terminal"/>
+    <item android:id="@+id/menu_gdrive" android:title="@string/menu_gdrive"/>
 </menu>

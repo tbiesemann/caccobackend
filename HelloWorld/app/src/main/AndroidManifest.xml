@@ -40,7 +40,8 @@
             android:name=".FilesOnDeviceActivity"
             android:label="@string/title_activity_files_on_device"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".TerminalActivity"></activity>
+        <activity android:name=".TerminalActivity" />
+        <activity android:name=".GDriveActivity"></activity>
     </application>
 
 </manifest>
