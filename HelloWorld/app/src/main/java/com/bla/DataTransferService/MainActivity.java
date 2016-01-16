@@ -3,8 +3,6 @@ package com.bla.DataTransferService;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -12,12 +10,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     CountDownTimer timer;
 
+    GDriveUtilities gDriveUtilities;
+    Button btnConnectGDrive;
+    TextView console;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,14 +29,47 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         this.createTimer();
         this.registerToSettingsChange();
 
+        this.btnConnectGDrive = (Button) findViewById(R.id.btnConnectGDrive);
+        this.console = (TextView) findViewById(R.id.txtConsole);
+        this.log("Starting...");
+
+        try {
+            this.gDriveUtilities = GDriveUtilitiesFactory.createGDriveUtilities(this);
+            this.gDriveUtilities.setLogger(new ILogger() {
+//                @Override
+                public void onLog(String text) {
+                    log(text);
+                }
+
+                public void onLogAsync(String text) {
+                }
+            });
+        } catch (Exception ex) {
+            this.log(ex.toString());
+        }
+
         final Button btnStartTransmission = (Button) findViewById(R.id.btnStartTransmission);
         btnStartTransmission.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 startDataTransmission();
             }
         });
+
+
+        btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                log("Connecting to GDrive...");
+                gDriveUtilities.connect();
+            }
+        });
     }
 
+
+    public void log(String text) {
+
+        console.setText(console.getText() + "\n" + text);
+        System.out.println(text);
+    }
 
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -122,4 +155,23 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 return super.onOptionsItemSelected(item);
         }
     }
+
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        switch (requestCode) {
+
+            case GDriveUtilities.REQUEST_CODE_RESOLUTION:
+
+                if (resultCode == RESULT_OK) {
+                    this.log("Trying to connect after sign in");
+                    gDriveUtilities.connect();
+                } else {
+                    this.log("Sign in failed!");
+                }
+                break;
+        }
+    }
+
+
 }
