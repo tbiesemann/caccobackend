@@ -166,6 +166,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 if (resultCode == RESULT_OK) {
                     this.log("Trying to connect after sign in");
                     gDriveUtilities.connect();
+                } else if (resultCode == RESULT_CANCELED) {
+                    this.log("Sign in failed - cancelled");
                 } else {
                     this.log("Sign in failed!");
                 }

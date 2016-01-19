@@ -7,7 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -42,6 +43,12 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".TerminalActivity" />
         <activity android:name=".GDriveActivity"></activity>
+
+
+        <meta-data
+            android:name="com.bla.DataTransferService"
+            android:value="id=AIzaSyC7UFV7kn2htkn7UTR_weqYsbY6cs1M4Q8" />
+
     </application>
 
 </manifest>

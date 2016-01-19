@@ -2,6 +2,7 @@ package com.bla.DataTransferService;
 
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 
 public class GDriveUtilitiesFactory {
 
@@ -9,7 +10,10 @@ public class GDriveUtilitiesFactory {
 
     public static GDriveUtilities createGDriveUtilities(Activity activity) throws Exception{
         if (utils == null){
-            utils = new GDriveUtilities(activity);
+            SharedPreferences settings = activity.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
+            String locationName = settings.getString("locationID", "Regenbecken42");
+
+            utils = new GDriveUtilities(activity, locationName);
         }
         return utils;
     }
