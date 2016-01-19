@@ -25,8 +25,8 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     public static final int REQUEST_CODE_RESOLUTION = 42;
 
 
-    public GDriveUtilities(Activity activity, String locationName) throws Exception{
-        if (activity == null){
+    public GDriveUtilities(Activity activity, String locationName) throws Exception {
+        if (activity == null) {
             throw new Exception("Mandatory activity missing");
         }
         this.mLocationName = locationName;
@@ -40,12 +40,9 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-
-    public void connect(){
+    public void connect() {
         mGoogleApiClient.connect();
     }
-
-
 
 
     public void setLogger(ILogger listener) {
@@ -75,11 +72,10 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-
-
     @Override
     public void onConnected(Bundle connectionHint) {
         this.log("GDrive connected");
+        this.initWorkingDirectory();
     }
 
 
@@ -93,30 +89,13 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
+    DriveFolder mRootFolder;
     DriveFolder mAquaFolder;
     DriveFolder mWorkingDirectory;
 
-    public void initWorkingDirectory(){
-        DriveFolder rootFolder = Drive.DriveApi.getRootFolder(this.mGoogleApiClient);
-        rootFolder.listChildren(this.mGoogleApiClient).setResultCallback(rootChildrenRetrievedCallback);
-        //Aqua folder does not exist, create it
-        if(this.mAquaFolder == null) {
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle("Aqua").build();
-            rootFolder.createFolder(this.mGoogleApiClient, changeSet).setResultCallback(AquaFolderCreatedCallback);
-        }
-
-        if(this.mAquaFolder == null) {
-            log("Error - no aqua folder - crap...");
-            return;
-        }
-
-        mAquaFolder.listChildren(this.mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
-        if(this.mWorkingDirectory == null){
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLocationName).build();
-            mAquaFolder.createFolder(this.mGoogleApiClient, changeSet).setResultCallback(WorkingDirectoryCreatedCallback);
-
-        }
-
+    public void initWorkingDirectory() {
+        mRootFolder = Drive.DriveApi.getRootFolder(this.mGoogleApiClient);
+        mRootFolder.listChildren(this.mGoogleApiClient).setResultCallback(rootChildrenRetrievedCallback);
     }
 
 
@@ -130,7 +109,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && metadata.getOriginalFilename().equals(mLocationName)){
+                if (metadata.isFolder() && metadata.getOriginalFilename().equals(mLocationName)) {
                     DriveId workingDirectoryDriveId = metadata.getDriveId();
                     mWorkingDirectory = workingDirectoryDriveId.asDriveFolder();
                     log("Folder '" + mLocationName + "' already exists");
@@ -138,9 +117,11 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 }
             }
             log("Folder '" + mLocationName + "' does not exist...Trying to create it");
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLocationName).build();
+            mAquaFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(WorkingDirectoryCreatedCallback);
+
         }
     };
-
 
 
     ResultCallback<DriveFolder.DriveFolderResult> WorkingDirectoryCreatedCallback = new ResultCallback<DriveFolder.DriveFolderResult>() {
@@ -166,30 +147,34 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && metadata.getOriginalFilename().equals("Aqua")){
+                if (metadata.isFolder() && metadata.getOriginalFilename() != null && metadata.getOriginalFilename().equals("Aqua")) {
                     DriveId mAquaDriveId = metadata.getDriveId();
                     mAquaFolder = mAquaDriveId.asDriveFolder();
                     log("Successfully found 'Aqua' folder");
+                    mAquaFolder.listChildren(mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
                     return;
                 }
             }
+
             log("Aqua folder does not exist...Trying to create it");
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle("Aqua").build();
+            mRootFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(AquaFolderCreatedCallback);
         }
     };
 
 
-
     ResultCallback<DriveFolder.DriveFolderResult> AquaFolderCreatedCallback = new ResultCallback<DriveFolder.DriveFolderResult>() {
-                @Override
-                public void onResult(DriveFolder.DriveFolderResult result) {
-                    if (!result.getStatus().isSuccess()) {
-                        log("Cannot create 'Aqua' folder in GDrive");
-                        return;
-                    }
-                    log("Aqua folder created in GDrive");
-                    mAquaFolder = result.getDriveFolder();
-                }
-            };
+        @Override
+        public void onResult(DriveFolder.DriveFolderResult result) {
+            if (!result.getStatus().isSuccess()) {
+                log("Cannot create 'Aqua' folder in GDrive");
+                return;
+            }
+            log("Aqua folder created in GDrive");
+            mAquaFolder = result.getDriveFolder();
+            mAquaFolder.listChildren(mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
+        }
+    };
 }
 
 
