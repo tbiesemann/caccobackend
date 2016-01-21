@@ -3,8 +3,9 @@ package com.bla.DataTransferService;
 
 import android.app.Activity;
 import android.content.IntentSender;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
+import android.text.format.Time;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -12,12 +13,18 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Date;
 
 public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -46,6 +53,17 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
+    }
+
+    public interface IconnectCompletedEventHandler {
+        void handle();
+    }
+
+    ;
+    IconnectCompletedEventHandler mConnectionCompletedHandler;
+
+    public void registerConnectCompletedEventHandler(IconnectCompletedEventHandler handler) {
+        mConnectionCompletedHandler = handler;
     }
 
 
@@ -93,6 +111,51 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
         public String fileName;
         public DriveFile file;
+    }
+
+
+    public void appendToLogFile(String data) throws Exception {
+        if (mLogFile == null) {
+            throw new Exception("Log file does not exist");
+        }
+
+        String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
+        final String text = "\n" + now.toString() + "  " + data;
+        mLogFile.open(mGoogleApiClient, DriveFile.MODE_READ_WRITE, null)
+                .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
+                                       @Override
+                                       public void onResult(DriveApi.DriveContentsResult result) {
+                                           if (!result.getStatus().isSuccess()) {
+                                               log("Cannot open log file for editing");
+                                               return;
+                                           }
+                                           DriveContents driveContents = result.getDriveContents();
+
+                                           try {
+                                               ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+                                               FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
+                                               Writer writer = new OutputStreamWriter(fileOutputStream);
+                                               writer.write(text);
+                                               writer.close();
+                                           } catch (IOException e) {
+                                               log("Error writing to logfile in Gdrive: " + e.toString());
+                                           }
+
+                                           driveContents.commit(mGoogleApiClient, null).setResultCallback(new ResultCallback<Status>() {
+                                               @Override
+                                               public void onResult(Status result) {
+                                                   if (!result.getStatus().isSuccess()) {
+                                                       log("Cannot commit changes to log file");
+                                                       return;
+                                                   } else {
+                                                       return;
+                                                   }
+                                               }
+                                           });
+
+                                       }
+                                   }
+                );
     }
 
 
@@ -213,31 +276,50 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                     return;
                 }
             }
-            log("Folder '" + mLocationName + "' does not exist...Trying to create it");
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLocationName).build();
-            mAquaFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(WorkingDirectoryCreatedCallback);
 
+            createWorkingDirectory();
         }
     };
 
 
-    ResultCallback<DriveFolder.DriveFolderResult> WorkingDirectoryCreatedCallback = new ResultCallback<DriveFolder.DriveFolderResult>() {
-        @Override
-        public void onResult(DriveFolder.DriveFolderResult result) {
-            if (!result.getStatus().isSuccess()) {
-                log("Cannot create '" + mLocationName + "' folder in GDrive");
-                return;
+    private void createWorkingDirectory(){
+        log("Creating folder '" + mLocationName + "'");
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLocationName).build();
+        mAquaFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(new ResultCallback<DriveFolder.DriveFolderResult>() {
+            @Override
+            public void onResult(DriveFolder.DriveFolderResult result) {
+                if (!result.getStatus().isSuccess()) {
+                    log("Cannot create '" + mLocationName + "' folder in GDrive");
+                    return;
+                }
+                log("Folder '" + mLocationName + "' created in GDrive");
+                mWorkingDirectory = result.getDriveFolder();
+
+                createEmptyLogfile();
             }
-            log("Folder '" + mLocationName + "' created in GDrive");
-            mWorkingDirectory = result.getDriveFolder();
+        });
+
+    }
 
 
-            log("Creating log file...");
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLogFileName).setMimeType("text/plain").build();
-            mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyLogFileCallback);
 
-        }
-    };
+    private void createEmptyLogfile(){
+        log("Creating log file...");
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLogFileName).setMimeType("text/plain").build();
+        mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
+            @Override
+            public void onResult(DriveFolder.DriveFileResult result) {
+                if (!result.getStatus().isSuccess()) {
+                    log("Problem creating empty log file " + mLogFileName);
+                    return;
+                } else {
+                    mLogFile = result.getDriveFile();
+                    log("Log File created: " + mLogFileName);
+                    executeInitializationCompletedEventHandler();
+                }
+            }
+        });
+    }
 
 
     ResultCallback<DriveApi.MetadataBufferResult> workingDirectoryChildrenRetrievedForLogFileCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -254,31 +336,17 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                     DriveId fileDriveId = metadata.getDriveId();
                     mLogFile = fileDriveId.asDriveFile();
                     log("Successfully found " + mLogFileName);
+                    executeInitializationCompletedEventHandler();
                     return;
                 }
             }
 
-            log("Log file " + mLogFileName + "' does not exist...Trying to create it");
-
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLogFileName).setMimeType("text/plain").build();
-            mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyLogFileCallback);
-
+            log("Log file " + mLogFileName + "' does not exist");
+            createEmptyLogfile();
         }
     };
 
 
-    ResultCallback<DriveFolder.DriveFileResult> createEmptyLogFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
-        @Override
-        public void onResult(DriveFolder.DriveFileResult result) {
-            if (!result.getStatus().isSuccess()) {
-                log("Problem creating empty log file " + mLogFileName);
-                return;
-            } else {
-                mLogFile = result.getDriveFile();
-                log("Log File created: " + mLogFileName);
-            }
-        }
-    };
 
 
     ResultCallback<DriveApi.MetadataBufferResult> rootChildrenRetrievedCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -291,20 +359,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                Date huhu = metadata.getCreatedDate();
-                boolean jiji = metadata.isExplicitlyTrashed();
-                boolean jujz = metadata.isTrashed();
-                String hhuuh = metadata.getDescription();
-                String ouwre = metadata.getTitle();
-                boolean nvlkie = metadata.isFolder();
-                String ppqoec = metadata.getAlternateLink();
-                String huchkewr = metadata.getEmbedLink();
-                String qqqw = metadata.getOriginalFilename();
-                String huztre = metadata.getWebContentLink();
-                String uiuiwez = metadata.getWebViewLink();
-                boolean jiuiz = metadata.isInAppFolder();
-                boolean juiuzi = metadata.isRestricted();
-                boolean jiquepap = metadata.isTrashable();
+
 
                 if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("Aqua")) {
                     DriveId mAquaDriveId = metadata.getDriveId();
@@ -334,6 +389,13 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             mAquaFolder.listChildren(mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
         }
     };
+
+
+    private void executeInitializationCompletedEventHandler() {
+        if (mConnectionCompletedHandler != null) {
+            mConnectionCompletedHandler.handle();
+        }
+    }
 }
 
 

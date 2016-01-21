@@ -12,12 +12,13 @@ import android.content.Intent;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     GDriveUtilities gDriveUtilities;
     Button btnConnectGDrive;
     Button btnOpenBluetoothConnection;
     TextView console;
+    boolean isGdriveInitialized = false;
 
     private BluetoothUtilities bluetoothUtilities;
 
@@ -35,8 +36,15 @@ public class MainActivity extends AppCompatActivity{
 
         try {
             this.gDriveUtilities = GDriveUtilitiesFactory.createGDriveUtilities(this);
+            this.gDriveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IconnectCompletedEventHandler() {
+                @Override
+                public void handle() {
+                    isGdriveInitialized = true;
+                }
+            });
+
             this.gDriveUtilities.setLogger(new ILogger() {
-//                @Override
+                //                @Override
                 public void onLog(String text) {
                     log(text);
                 }
@@ -49,14 +57,12 @@ public class MainActivity extends AppCompatActivity{
         }
 
 
-
         btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 log("Connecting to GDrive...");
                 gDriveUtilities.connect();
             }
         });
-
 
 
         this.btnOpenBluetoothConnection.setOnClickListener(new View.OnClickListener() {
@@ -72,9 +78,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-
-
-    private void createBluetoothUtilities(){
+    private void createBluetoothUtilities() {
 
         this.bluetoothUtilities = BluetoothUtilitiesFactory.getBluetoothUtilities();
 
@@ -113,6 +117,14 @@ public class MainActivity extends AppCompatActivity{
 
         console.setText(console.getText() + "\n" + text);
         System.out.println(text);
+        try {
+            gDriveUtilities.appendToLogFile(text);
+        } catch (Exception ex) {
+            if (isGdriveInitialized) {
+                console.setText(console.getText() + "\n" + "Cannot write log to gdrive");
+                System.out.println(text);
+            }
+        }
     }
 
 
