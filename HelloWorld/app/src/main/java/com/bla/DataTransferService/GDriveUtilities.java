@@ -42,6 +42,10 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
 
     public void connect() {
+        if(mGoogleApiClient.isConnected()){
+            log("GDrive is already connected");
+            return;
+        }
         mGoogleApiClient.connect();
     }
 
