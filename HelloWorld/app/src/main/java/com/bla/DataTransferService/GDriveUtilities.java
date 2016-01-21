@@ -18,10 +18,14 @@ import com.google.android.gms.drive.MetadataChangeSet;
 
 public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+    final String mLogFileName = "log.txt";
     Activity mActivity;
     private GoogleApiClient mGoogleApiClient;
     private ILogger logger;
     private String mLocationName;
+    private CurrentFile mCurrentFile;
+    private DriveFile mLogFile;
+
 
     public static final int REQUEST_CODE_RESOLUTION = 42;
 
@@ -72,7 +76,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 this.log("Error: Something with GDrive went wrong.....");
             }
         } else {
-            this.log("Error: Cannot connect to GDrive ad no error resolution possible");
+            this.log("Error: Cannot connect to GDrive and no error resolution possible");
         }
     }
 
@@ -87,9 +91,8 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         public DriveFile file;
     }
 
-    ;
 
-    CurrentFile mCurrentFile;
+
 
     public void appendToFile(String fileName, String data) {
 
@@ -97,12 +100,12 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             this.appendToFile(mCurrentFile.file, data);
         } else {
             mCurrentFile = new CurrentFile(fileName, null);
-            mWorkingDirectory.listChildren(this.mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedCallback);
+            mWorkingDirectory.listChildren(this.mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedForDataFileCallback);
         }
     }
 
 
-    ResultCallback<DriveApi.MetadataBufferResult> workingDirectoryChildrenRetrievedCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
+    ResultCallback<DriveApi.MetadataBufferResult> workingDirectoryChildrenRetrievedForDataFileCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
         @Override
         public void onResult(DriveApi.MetadataBufferResult result) {
             if (!result.getStatus().isSuccess()) {
@@ -112,7 +115,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && metadata.getOriginalFilename() != null && metadata.getOriginalFilename().equals(mCurrentFile.fileName)) {
+                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.fileName)) {
                     DriveId fileDriveId = metadata.getDriveId();
                     mCurrentFile.file = fileDriveId.asDriveFile();
                     log("Successfully found " + mCurrentFile.fileName + " file");
@@ -123,13 +126,13 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             log("File '" + mCurrentFile + "' does not exist...Trying to create it");
 
             MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.fileName).setMimeType("text/plain").build();
-            mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyFileCallback);
+            mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyDataFileCallback);
 
         }
     };
 
 
-    ResultCallback<DriveFolder.DriveFileResult> createEmptyFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
+    ResultCallback<DriveFolder.DriveFileResult> createEmptyDataFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
         @Override
         public void onResult(DriveFolder.DriveFileResult result) {
             if (!result.getStatus().isSuccess()) {
@@ -146,6 +149,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     private void appendToFile(DriveFile file, String data) {
 
     }
+
 
     @Override
     public void onConnected(Bundle connectionHint) {
@@ -187,10 +191,13 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && metadata.getOriginalFilename().equals(mLocationName)) {
+                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mLocationName)) {
                     DriveId workingDirectoryDriveId = metadata.getDriveId();
                     mWorkingDirectory = workingDirectoryDriveId.asDriveFolder();
                     log("Folder '" + mLocationName + "' already exists");
+
+                    log("Looking for an existing log file...");
+                    mWorkingDirectory.listChildren(mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedForLogFileCallback);
                     return;
                 }
             }
@@ -211,8 +218,57 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             }
             log("Folder '" + mLocationName + "' created in GDrive");
             mWorkingDirectory = result.getDriveFolder();
+
+
+            log("Creating log file...");
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLogFileName).setMimeType("text/plain").build();
+            mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyLogFileCallback);
+
         }
     };
+
+
+    ResultCallback<DriveApi.MetadataBufferResult> workingDirectoryChildrenRetrievedForLogFileCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
+        @Override
+        public void onResult(DriveApi.MetadataBufferResult result) {
+            if (!result.getStatus().isSuccess()) {
+                log("Problem reading children of working directory while searching for logfile");
+                return;
+            }
+            int length = result.getMetadataBuffer().getCount();
+            for (int i = 0; i < length; i++) {
+                Metadata metadata = result.getMetadataBuffer().get(i);
+                if (!metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mLogFileName)) {
+                    DriveId fileDriveId = metadata.getDriveId();
+                    mLogFile = fileDriveId.asDriveFile();
+                    log("Successfully found " + mLogFileName);
+                    return;
+                }
+            }
+
+            log("Log file " + mLogFileName + "' does not exist...Trying to create it");
+
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLogFileName).setMimeType("text/plain").build();
+            mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyLogFileCallback);
+
+        }
+    };
+
+
+
+    ResultCallback<DriveFolder.DriveFileResult> createEmptyLogFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
+        @Override
+        public void onResult(DriveFolder.DriveFileResult result) {
+            if (!result.getStatus().isSuccess()) {
+                log("Problem creating empty log file " + mLogFileName);
+                return;
+            } else {
+                mLogFile = result.getDriveFile();
+                log("Log File created: " + mLogFileName);
+            }
+        }
+    };
+
 
 
     ResultCallback<DriveApi.MetadataBufferResult> rootChildrenRetrievedCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -225,7 +281,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && metadata.getOriginalFilename() != null && metadata.getOriginalFilename().equals("Aqua")) {
+                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("Aqua")) {
                     DriveId mAquaDriveId = metadata.getDriveId();
                     mAquaFolder = mAquaDriveId.asDriveFolder();
                     log("Successfully found 'Aqua' folder");
