@@ -19,7 +19,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
     CheckBox cbxUseWindowsLineEndings;
     Button btnTestConnection;
 
-    private BluetoothUtilities bluetooth;
+    private BluetoothUtilities bluetoothUtilities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +70,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         final Button btnShowPairedDevices = (Button) findViewById(R.id.btnShowPairedDevices);
         btnShowPairedDevices.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                List<String> devices = bluetooth.getPairedDevicesAsString();
+                List<String> devices = bluetoothUtilities.getPairedDevicesAsString();
                 for (String device : devices) {
                     log(device);
                 }
@@ -84,14 +84,15 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
     private void createBluetoothUtilities(){
 
-        this.bluetooth = BluetoothUtilitiesFactory.getBluetoothUtilities();
-        this.bluetooth.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
-        this.bluetooth.setLogger(new ILogger() {
+        this.bluetoothUtilities = BluetoothUtilitiesFactory.getBluetoothUtilities();
+        this.bluetoothUtilities.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
+        this.bluetoothUtilities.setLogger(new ILogger() {
             @Override
             public void onLog(String text) {
                 log(text);
             }
-            public void onLogAsync(String text){
+
+            public void onLogAsync(String text) {
             }
         });
     }
@@ -106,17 +107,17 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
     private void testConnection() {
 
-        this.bluetooth.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
+        this.bluetoothUtilities.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
 
-        //Make sure bluetooth is turned on
-        BluetoothAdapter mBluetoothAdapter = this.bluetooth.getBluetoothAdapter();
+        //Make sure bluetoothUtilities is turned on
+        BluetoothAdapter mBluetoothAdapter = this.bluetoothUtilities.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
             this.log("Bluetooth adapter is not available");
             return;
         }
-        this.bluetooth.enableBluetoothAdapter();
+        this.bluetoothUtilities.enableBluetoothAdapter();
         String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
-        this.bluetooth.establishConnection(deviceName);
+        this.bluetoothUtilities.establishConnection(deviceName);
     }
 
 

@@ -1,8 +1,8 @@
 package com.bla.DataTransferService;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -16,7 +16,11 @@ public class MainActivity extends AppCompatActivity{
 
     GDriveUtilities gDriveUtilities;
     Button btnConnectGDrive;
+    Button btnOpenBluetoothConnection;
     TextView console;
+
+    private BluetoothUtilities bluetoothUtilities;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +30,7 @@ public class MainActivity extends AppCompatActivity{
         setSupportActionBar(toolbar);
 
         this.btnConnectGDrive = (Button) findViewById(R.id.btnConnectGDrive);
+        this.btnOpenBluetoothConnection = (Button) findViewById(R.id.btnOpenBluetoothConnection);
         this.console = (TextView) findViewById(R.id.txtConsole);
 
         try {
@@ -51,8 +56,58 @@ public class MainActivity extends AppCompatActivity{
                 gDriveUtilities.connect();
             }
         });
+
+
+
+        this.btnOpenBluetoothConnection.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                log("Opening bluetooth...");
+                openBluetoothConnection();
+                log("Done opening bluetooth connection");
+            }
+        });
+
+        this.createBluetoothUtilities();
+
     }
 
+
+
+
+    private void createBluetoothUtilities(){
+
+        this.bluetoothUtilities = BluetoothUtilitiesFactory.getBluetoothUtilities();
+
+        //Read from Settings
+        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
+        boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
+        this.bluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
+        this.bluetoothUtilities.setLogger(new ILogger() {
+            @Override
+            public void onLog(String text) {
+                log(text);
+            }
+
+            public void onLogAsync(String text) {
+            }
+        });
+    }
+
+
+    private void openBluetoothConnection() {
+
+        //Make sure bluetooth is turned on
+        BluetoothAdapter mBluetoothAdapter = this.bluetoothUtilities.getBluetoothAdapter();
+        if (mBluetoothAdapter == null) {
+            this.log("Bluetooth adapter is not available");
+            return;
+        }
+        this.bluetoothUtilities.enableBluetoothAdapter();
+
+        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
+        String deviceName = settings.getString("deviceName", "");
+        this.bluetoothUtilities.establishConnection(deviceName);
+    }
 
     public void log(String text) {
 

@@ -177,7 +177,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         @Override
         public void onResult(DriveApi.MetadataBufferResult result) {
             if (!result.getStatus().isSuccess()) {
-                log("Problem reading children of root directory");
+                log("Problem reading children of Aqua directory");
                 return;
             }
             int length = result.getMetadataBuffer().getCount();
