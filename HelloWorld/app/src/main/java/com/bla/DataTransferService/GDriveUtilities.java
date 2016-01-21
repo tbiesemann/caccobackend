@@ -3,11 +3,13 @@ package com.bla.DataTransferService;
 
 import android.app.Activity;
 import android.content.IntentSender;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveFile;
@@ -15,6 +17,8 @@ import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
+
+import java.util.Date;
 
 public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -46,7 +50,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
 
     public void connect() {
-        if(mGoogleApiClient.isConnected()){
+        if (mGoogleApiClient.isConnected()) {
             log("GDrive is already connected");
             return;
         }
@@ -90,8 +94,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         public String fileName;
         public DriveFile file;
     }
-
-
 
 
     public void appendToFile(String fileName, String data) {
@@ -154,7 +156,20 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     @Override
     public void onConnected(Bundle connectionHint) {
         this.log("GDrive connected");
-        this.initWorkingDirectory();
+        this.log("Synchronizing...");
+        Drive.DriveApi.requestSync(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(Status result) {
+                if (!result.isSuccess()) {
+                    log("Synchronization failed failed error - no network connection? Ignoring error...");
+                    initWorkingDirectory();
+                    return;
+                } else {
+                    log("Synchronization finished...");
+                    initWorkingDirectory();
+                }
+            }
+        });
     }
 
 
@@ -176,9 +191,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         mRootFolder = Drive.DriveApi.getRootFolder(this.mGoogleApiClient);
         mRootFolder.listChildren(this.mGoogleApiClient).setResultCallback(rootChildrenRetrievedCallback);
     }
-
-
-
 
 
     ResultCallback<DriveApi.MetadataBufferResult> aquaChildrenRetrievedCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -255,7 +267,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     };
 
 
-
     ResultCallback<DriveFolder.DriveFileResult> createEmptyLogFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
         @Override
         public void onResult(DriveFolder.DriveFileResult result) {
@@ -270,7 +281,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     };
 
 
-
     ResultCallback<DriveApi.MetadataBufferResult> rootChildrenRetrievedCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
         @Override
         public void onResult(DriveApi.MetadataBufferResult result) {
@@ -281,6 +291,21 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
+                Date huhu = metadata.getCreatedDate();
+                boolean jiji = metadata.isExplicitlyTrashed();
+                boolean jujz = metadata.isTrashed();
+                String hhuuh = metadata.getDescription();
+                String ouwre = metadata.getTitle();
+                boolean nvlkie = metadata.isFolder();
+                String ppqoec = metadata.getAlternateLink();
+                String huchkewr = metadata.getEmbedLink();
+                String qqqw = metadata.getOriginalFilename();
+                String huztre = metadata.getWebContentLink();
+                String uiuiwez = metadata.getWebViewLink();
+                boolean jiuiz = metadata.isInAppFolder();
+                boolean juiuzi = metadata.isRestricted();
+                boolean jiquepap = metadata.isTrashable();
+
                 if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("Aqua")) {
                     DriveId mAquaDriveId = metadata.getDriveId();
                     mAquaFolder = mAquaDriveId.asDriveFolder();
