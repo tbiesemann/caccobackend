@@ -9,8 +9,8 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.bla.DataTransferService.UploadSettingsActivity"
-    tools:showIn="@layout/activity_upload_settings">
+    tools:context=".GmailSettingsActivity"
+    tools:showIn="@layout/activity_gmail_settings">
 
     <TextView
         android:layout_width="wrap_content"

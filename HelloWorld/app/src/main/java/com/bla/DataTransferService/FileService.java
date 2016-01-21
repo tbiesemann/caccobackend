@@ -81,10 +81,12 @@ public class FileService {
 
         File dir = new File(sWorkingDirectory);
         File[] files = dir.listFiles();
-        for (File inFile : files) {
-            if (inFile.isFile()) {
-                name = inFile.getName();
-                result.add(name);
+        if (files != null) {
+            for (File inFile : files) {
+                if (inFile.isFile()) {
+                    name = inFile.getName();
+                    result.add(name);
+                }
             }
         }
 

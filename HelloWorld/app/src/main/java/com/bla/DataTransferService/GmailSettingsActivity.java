@@ -11,12 +11,12 @@ import android.widget.Button;
 import android.widget.EditText;
 
 
-public class UploadSettingsActivity extends AppCompatActivity {
+public class GmailSettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_upload_settings);
+        setContentView(R.layout.activity_gmail_settings);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -71,7 +71,7 @@ public class UploadSettingsActivity extends AppCompatActivity {
         String gmailPassword = ((EditText) findViewById(R.id.txtGmailPassword)).getText().toString();
         String recipient = ((EditText) findViewById(R.id.txtRecipient)).getText().toString();
 
-        BackgroundMail backgroundMail = new BackgroundMail(UploadSettingsActivity.this);
+        BackgroundMail backgroundMail = new BackgroundMail(GmailSettingsActivity.this);
         backgroundMail.setGmailUserName(gmailAddress);
         backgroundMail.setGmailPassword(gmailPassword);
         backgroundMail.setMailTo(recipient);
