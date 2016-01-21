@@ -6,7 +6,7 @@
     <string name="menu_gmail">Gmail Settings</string>
     <string name="menu_general">General Settings</string>
     <string name="menu_terminal">Bluetooth Terminal</string>
-    <string name="menu_gdrive">Google Drive</string>
+    <string name="menu_gdrive">GDrive Settings</string>
     <string name="menu_gmail_upload">Gmail Upload</string>
 
     <string name="title_activity_bluetooth_settings">Settings</string>

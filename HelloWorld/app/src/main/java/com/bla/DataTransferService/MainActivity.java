@@ -86,9 +86,6 @@ public class MainActivity extends AppCompatActivity{
             case (R.id.menu_terminal):
                 this.startActivity(new Intent(this, TerminalActivity.class));
                 return true;
-            case (R.id.menu_gdrive):
-                this.startActivity(new Intent(this, GDriveActivity.class));
-                return true;
             case (R.id.menu_gmail_upload):
                 this.startActivity(new Intent(this, GmailUploadActivity.class));
                 return true;
@@ -115,5 +112,5 @@ public class MainActivity extends AppCompatActivity{
                 break;
         }
     }
-    
+
 }

@@ -1,11 +1,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
-    <item android:id="@+id/menu_bluetooth" android:title="@string/menu_bluetooth"/>
-    <item android:id="@+id/menu_files" android:title="@string/menu_file"/>
-    <item android:id="@+id/menu_gmail" android:title="@string/menu_gmail"/>
     <item android:id="@+id/menu_general" android:title="@string/menu_general"/>
-    <item android:id="@+id/menu_terminal" android:title="@string/menu_terminal"/>
+    <item android:id="@+id/menu_bluetooth" android:title="@string/menu_bluetooth"/>
     <item android:id="@+id/menu_gdrive" android:title="@string/menu_gdrive"/>
+    <item android:id="@+id/menu_terminal" android:title="@string/menu_terminal"/>
+    <item android:id="@+id/menu_gmail" android:title="@string/menu_gmail"/>
+    <item android:id="@+id/menu_files" android:title="@string/menu_file"/>
     <item android:id="@+id/menu_gmail_upload" android:title="@string/menu_gmail_upload"/>
 </menu>
