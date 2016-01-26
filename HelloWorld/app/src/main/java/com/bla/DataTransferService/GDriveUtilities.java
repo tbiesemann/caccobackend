@@ -317,13 +317,17 @@ private void continuePendingAppendOperation() {
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
                 if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mLocationName)) {
-                    DriveId workingDirectoryDriveId = metadata.getDriveId();
-                    mWorkingDirectory = workingDirectoryDriveId.asDriveFolder();
-                    log("Successfully found '" + mLocationName + "' folder");
+                    if (metadata.isTrashed()) {
+                        log(mLocationName + " folder is trashed...will be ignored");
+                    } else {
+                        DriveId workingDirectoryDriveId = metadata.getDriveId();
+                        mWorkingDirectory = workingDirectoryDriveId.asDriveFolder();
+                        log("Successfully found '" + mLocationName + "' folder");
 
-                    log("Looking for an existing log file...");
-                    mWorkingDirectory.listChildren(mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedForLogFileCallback);
-                    return;
+                        log("Looking for an existing log file...");
+                        mWorkingDirectory.listChildren(mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedForLogFileCallback);
+                        return;
+                    }
                 }
             }
 
@@ -412,11 +416,15 @@ private void continuePendingAppendOperation() {
 
 
                 if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("Aqua")) {
-                    DriveId mAquaDriveId = metadata.getDriveId();
-                    mAquaFolder = mAquaDriveId.asDriveFolder();
-                    log("Successfully found 'Aqua' folder");
-                    mAquaFolder.listChildren(mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
-                    return;
+                    if (metadata.isTrashed()) {
+                        log("Aqua folder is trashed...will be ignored");
+                    } else {
+                        DriveId mAquaDriveId = metadata.getDriveId();
+                        mAquaFolder = mAquaDriveId.asDriveFolder();
+                        log("Successfully found 'Aqua' folder");
+                        mAquaFolder.listChildren(mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
+                        return;
+                    }
                 }
             }
 
