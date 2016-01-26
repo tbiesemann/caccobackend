@@ -82,12 +82,12 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 if (mGDriveWriterThread != null){
-                    String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
-                    try {
-                        mMessageQueue.put("Test contet for GDrive" + now);
-                    } catch (InterruptedException ex){
-                        log("Upps - error writing test data");
-                    }
+//                    String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
+//                    try {
+//                        mMessageQueue.put("Test contet for GDrive" + now);
+//                    } catch (InterruptedException ex){
+//                        log("Upps - error writing test data");
+//                    }
                     log("Error: Already started.....");
                     return;
                 }
@@ -154,8 +154,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void log(String text) {
+        int maxConsoleLength = 4000;
 
-        console.setText(console.getText() + "\n" + text);
+        String consoleText = console.getText().toString();
+        int length = consoleText.length();
+        if (length > maxConsoleLength){
+            consoleText = consoleText.substring(length - maxConsoleLength, length);
+        }
+
+        console.setText(consoleText + "\n" + text);
         System.out.println(text);
         try {
             gDriveUtilities.appendToLogFile(text);

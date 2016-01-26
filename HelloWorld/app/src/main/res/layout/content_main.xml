@@ -26,10 +26,20 @@
         android:layout_height="wrap_content"
         android:text="Open Bluetooth Connection"
         android:id="@+id/btnOpenBluetoothConnection"
-        android:layout_marginTop="18dp"
         android:layout_below="@+id/btnConnectGDrive"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Listening"
+        android:id="@+id/btnStart"
+        android:layout_below="@+id/btnOpenBluetoothConnection"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/btnOpenBluetoothConnection"
+        android:layout_alignEnd="@+id/btnOpenBluetoothConnection" />
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -39,26 +49,18 @@
         android:fillViewport="true"
         android:layout_below="@+id/btnOpenBluetoothConnection"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:id="@+id/txtConsole"
-
-            />
-    </ScrollView>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start Listening"
-        android:id="@+id/btnStart"
-        android:layout_below="@+id/scrollView"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignRight="@+id/btnOpenBluetoothConnection"
-        android:layout_alignEnd="@+id/btnOpenBluetoothConnection" />
+        android:layout_marginTop="90dp"></ScrollView>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/txtConsole"
+
+        android:layout_alignTop="@+id/scrollView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 
 </RelativeLayout>

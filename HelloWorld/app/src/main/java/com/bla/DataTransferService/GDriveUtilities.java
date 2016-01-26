@@ -161,10 +161,13 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         if (mCurrentFile != null && mCurrentFile.fileName == fileName) {
             this.appendToFile(mCurrentFile.file, data);
         } else {
+            mTextNotYetAppendedToDataFile = data;
             mCurrentFile = new CurrentFile(fileName, null);
             mWorkingDirectory.listChildren(this.mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedForDataFileCallback);
         }
     }
+
+    private String mTextNotYetAppendedToDataFile;
 
 
     ResultCallback<DriveApi.MetadataBufferResult> workingDirectoryChildrenRetrievedForDataFileCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -177,15 +180,17 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.fileName)) {
+                if (!metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.fileName)) {
                     DriveId fileDriveId = metadata.getDriveId();
                     mCurrentFile.file = fileDriveId.asDriveFile();
                     log("Successfully found " + mCurrentFile.fileName + " file");
+
+                    continuePendingAppendOperation();
                     return;
                 }
             }
 
-            log("File '" + mCurrentFile + "' does not exist...Trying to create it");
+            log("File '" + mCurrentFile.fileName + "' does not exist...Trying to create it");
 
             MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.fileName).setMimeType("text/plain").build();
             mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyDataFileCallback);
@@ -202,14 +207,62 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 return;
             } else {
                 log("File created'" + mCurrentFile.fileName + "'");
-            }
 
+                continuePendingAppendOperation();
+            }
         }
     };
 
+private void continuePendingAppendOperation() {
+    if (!mTextNotYetAppendedToDataFile.isEmpty()) { //If there is a pending append
+        String tmp = mTextNotYetAppendedToDataFile;
+        mTextNotYetAppendedToDataFile = "";
+        appendToFile(mCurrentFile.fileName, tmp);
+    }
+}
+
 
     private void appendToFile(DriveFile file, String data) {
+        final String text = data;
+        if (file == null){
+            log("Programming Error: cannot append to file, it is null");
+            return;
+        }
+        file.open(mGoogleApiClient, DriveFile.MODE_READ_WRITE, null)
+                .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
+                                       @Override
+                                       public void onResult(DriveApi.DriveContentsResult result) {
+                                           if (!result.getStatus().isSuccess()) {
+                                               log("Cannot open data file for editing");
+                                               return;
+                                           }
+                                           DriveContents driveContents = result.getDriveContents();
 
+                                           try {
+                                               ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+                                               FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
+                                               Writer writer = new OutputStreamWriter(fileOutputStream);
+                                               writer.write(text);
+                                               writer.close();
+                                           } catch (IOException e) {
+                                               log("Error writing to data file in Gdrive: " + e.toString());
+                                           }
+
+                                           driveContents.commit(mGoogleApiClient, null).setResultCallback(new ResultCallback<Status>() {
+                                               @Override
+                                               public void onResult(Status result) {
+                                                   if (!result.getStatus().isSuccess()) {
+                                                       log("Cannot commit changes to data file");
+                                                       return;
+                                                   } else {
+                                                       return;
+                                                   }
+                                               }
+                                           });
+
+                                       }
+                                   }
+                );
     }
 
 
@@ -266,7 +319,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mLocationName)) {
                     DriveId workingDirectoryDriveId = metadata.getDriveId();
                     mWorkingDirectory = workingDirectoryDriveId.asDriveFolder();
-                    log("Folder '" + mLocationName + "' already exists");
+                    log("Successfully found '" + mLocationName + "' folder");
 
                     log("Looking for an existing log file...");
                     mWorkingDirectory.listChildren(mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedForLogFileCallback);
