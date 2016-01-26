@@ -12,15 +12,26 @@ import android.content.Intent;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 public class MainActivity extends AppCompatActivity {
 
     GDriveUtilities gDriveUtilities;
     Button btnConnectGDrive;
     Button btnOpenBluetoothConnection;
+    Button btnStart;
     TextView console;
+
+    BlockingQueue<String> mMessageQueue;
+
+    Thread mGDriveWriterThread;
+
+
     boolean isGdriveInitialized = false;
 
-    private BluetoothUtilities bluetoothUtilities;
+    private BluetoothUtilities mBluetoothUtilities;
 
 
     @Override
@@ -30,8 +41,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+
         this.btnConnectGDrive = (Button) findViewById(R.id.btnConnectGDrive);
         this.btnOpenBluetoothConnection = (Button) findViewById(R.id.btnOpenBluetoothConnection);
+        this.btnStart = (Button) findViewById(R.id.btnStart);
         this.console = (TextView) findViewById(R.id.txtConsole);
 
         try {
@@ -43,13 +57,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            this.gDriveUtilities.setLogger(new ILogger() {
-                //                @Override
+            this.gDriveUtilities.setLogger(new IGDriveLogger() {
                 public void onLog(String text) {
                     log(text);
-                }
-
-                public void onLogAsync(String text) {
                 }
             });
         } catch (Exception ex) {
@@ -61,6 +71,31 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 log("Connecting to GDrive...");
                 gDriveUtilities.connect();
+            }
+        });
+
+        btnStart.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                if (isGdriveInitialized != true) {
+                    log("Error: Cannot start - GDrive is not yet initialized!");
+                    return;
+                }
+                if (mGDriveWriterThread != null){
+                    String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
+                    try {
+                        mMessageQueue.put("Test contet for GDrive" + now);
+                    } catch (InterruptedException ex){
+                        log("Upps - error writing test data");
+                    }
+                    log("Error: Already started.....");
+                    return;
+                }
+                log("Establish connection between bluetooth and GDrive...");
+                mMessageQueue =  new LinkedBlockingQueue<String>();
+                GDriveRunnable gDriveRunnable = new GDriveRunnable(gDriveUtilities, mMessageQueue);
+                mGDriveWriterThread = new Thread(gDriveRunnable);
+                mGDriveWriterThread.start();
             }
         });
 
@@ -80,19 +115,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void createBluetoothUtilities() {
 
-        this.bluetoothUtilities = BluetoothUtilitiesFactory.getBluetoothUtilities();
+        this.mBluetoothUtilities = BluetoothUtilitiesFactory.getBluetoothUtilities();
 
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
-        this.bluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
-        this.bluetoothUtilities.setLogger(new ILogger() {
+        this.mBluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
+        this.mBluetoothUtilities.setLogger(new ILogger() {
             @Override
             public void onLog(String text) {
                 log(text);
             }
 
             public void onLogAsync(String text) {
+                try {
+                    mMessageQueue.put(text); //Write message from bluetooth onto the queue
+                } catch (InterruptedException ex){
+                    log("Error writing onto queue:" + ex.toString());
+                }
             }
         });
     }
@@ -101,16 +141,16 @@ public class MainActivity extends AppCompatActivity {
     private void openBluetoothConnection() {
 
         //Make sure bluetooth is turned on
-        BluetoothAdapter mBluetoothAdapter = this.bluetoothUtilities.getBluetoothAdapter();
+        BluetoothAdapter mBluetoothAdapter = this.mBluetoothUtilities.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
             this.log("Bluetooth adapter is not available");
             return;
         }
-        this.bluetoothUtilities.enableBluetoothAdapter();
+        this.mBluetoothUtilities.enableBluetoothAdapter();
 
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String deviceName = settings.getString("deviceName", "");
-        this.bluetoothUtilities.establishConnection(deviceName);
+        this.mBluetoothUtilities.establishConnection(deviceName);
     }
 
     public void log(String text) {
@@ -181,3 +221,5 @@ public class MainActivity extends AppCompatActivity {
     }
 
 }
+
+

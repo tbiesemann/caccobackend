@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.text.format.Time;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -20,19 +19,17 @@ import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Date;
 
 public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     final String mLogFileName = "log.txt";
     Activity mActivity;
     private GoogleApiClient mGoogleApiClient;
-    private ILogger logger;
+    private IGDriveLogger mLogger;
     private String mLocationName;
     private CurrentFile mCurrentFile;
     private DriveFile mLogFile;
@@ -76,13 +73,13 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-    public void setLogger(ILogger listener) {
-        logger = listener;
+    public void setLogger(IGDriveLogger listener) {
+        mLogger = listener;
     }
 
     private void log(String text) {
-        if (this.logger != null) {
-            this.logger.onLog(text);
+        if (this.mLogger != null) {
+            this.mLogger.onLog(text);
         }
     }
 

@@ -49,6 +49,16 @@
             />
     </ScrollView>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Listening"
+        android:id="@+id/btnStart"
+        android:layout_below="@+id/scrollView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignRight="@+id/btnOpenBluetoothConnection"
+        android:layout_alignEnd="@+id/btnOpenBluetoothConnection" />
 
 
 </RelativeLayout>
