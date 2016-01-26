@@ -82,12 +82,12 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 if (mGDriveWriterThread != null){
-//                    String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
-//                    try {
-//                        mMessageQueue.put("Test contet for GDrive" + now);
-//                    } catch (InterruptedException ex){
-//                        log("Upps - error writing test data");
-//                    }
+                    String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
+                    try {
+                        mMessageQueue.put("Test content for GDrive" + now);
+                    } catch (InterruptedException ex){
+                        log("Upps - error writing test data");
+                    }
                     log("Error: Already started.....");
                     return;
                 }

@@ -19,8 +19,11 @@ import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
@@ -240,6 +243,15 @@ private void continuePendingAppendOperation() {
 
                                            try {
                                                ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+
+                                               //For debugging - read content of file
+                                               FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+                                               byte[] fileContent = new byte[fileInputStream.available()];
+                                               String str = new String(fileContent, "UTF-8");
+
+                                               fileInputStream.read(fileContent);
+
+
                                                FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
                                                Writer writer = new OutputStreamWriter(fileOutputStream);
                                                writer.write(text);
@@ -255,6 +267,7 @@ private void continuePendingAppendOperation() {
                                                        log("Cannot commit changes to data file");
                                                        return;
                                                    } else {
+                                                       log("Successfully written to GDrive data file");
                                                        return;
                                                    }
                                                }
