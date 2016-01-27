@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     Button btnConnectGDrive;
     Button btnOpenBluetoothConnection;
     Button btnStart;
+    Button btnForceSync;
     TextView console;
 
     BlockingQueue<String> mMessageQueue;
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         this.btnConnectGDrive = (Button) findViewById(R.id.btnConnectGDrive);
         this.btnOpenBluetoothConnection = (Button) findViewById(R.id.btnOpenBluetoothConnection);
         this.btnStart = (Button) findViewById(R.id.btnStart);
+        this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
 
         try {
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mGDriveWriterThread != null){
                     String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
                     try {
-                        mMessageQueue.put("Test content for GDrive" + now);
+                        mMessageQueue.put("Test content for GDrive" + now + "\n");
                     } catch (InterruptedException ex){
                         log("Upps - error writing test data");
                     }
@@ -99,6 +101,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        this.btnForceSync.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (gDriveUtilities != null){
+                    gDriveUtilities.forceSync();
+                }
+            }
+        });
 
         this.btnOpenBluetoothConnection.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

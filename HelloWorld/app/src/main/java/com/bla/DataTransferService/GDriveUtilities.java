@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.channels.FileChannel;
 
 public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -133,7 +134,21 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
                                            try {
                                                ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+
+                                               //For debugging - read content of log file
+//                                               FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+//                                               byte[] fileContent = new byte[fileInputStream.available()];
+//                                               fileInputStream.read(fileContent);
+//                                               String str = new String(fileContent, "UTF-8");
+
+
                                                FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
+
+                                               //Jump to end of file
+                                               FileChannel channel = fileOutputStream.getChannel();
+                                               long size = channel.size();
+                                               channel.position(size);
+
                                                Writer writer = new OutputStreamWriter(fileOutputStream);
                                                writer.write(text);
                                                writer.flush();
@@ -246,13 +261,18 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                                                ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
 
                                                //For debugging - read content of file
-                                               FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-                                               byte[] fileContent = new byte[fileInputStream.available()];
-                                               fileInputStream.read(fileContent);
-                                               String str = new String(fileContent, "UTF-8");
-
+//                                               FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+//                                               byte[] fileContent = new byte[fileInputStream.available()];
+//                                               fileInputStream.read(fileContent);
+//                                               String str = new String(fileContent, "UTF-8");
 
                                                FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
+
+                                               //Jump to end of file
+                                               FileChannel channel = fileOutputStream.getChannel();
+                                               long size = channel.size();
+                                               channel.position(size);
+
                                                Writer writer = new OutputStreamWriter(fileOutputStream);
                                                writer.write(text);
                                                writer.flush();
@@ -279,6 +299,19 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 );
     }
 
+
+    public void forceSync(){
+        Drive.DriveApi.requestSync(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(Status result) {
+                if (!result.isSuccess()) {
+                    log("Force Synchronization failed");
+                } else {
+                    log("Force Synchronization finished");
+                }
+            }
+        });
+    }
 
     @Override
     public void onConnected(Bundle connectionHint) {
