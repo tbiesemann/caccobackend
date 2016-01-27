@@ -136,6 +136,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                                                FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
                                                Writer writer = new OutputStreamWriter(fileOutputStream);
                                                writer.write(text);
+                                               writer.flush();
                                                writer.close();
                                            } catch (IOException e) {
                                                log("Error writing to logfile in Gdrive: " + e.toString());
@@ -216,18 +217,18 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         }
     };
 
-private void continuePendingAppendOperation() {
-    if (!mTextNotYetAppendedToDataFile.isEmpty()) { //If there is a pending append
-        String tmp = mTextNotYetAppendedToDataFile;
-        mTextNotYetAppendedToDataFile = "";
-        appendToFile(mCurrentFile.fileName, tmp);
+    private void continuePendingAppendOperation() {
+        if (!mTextNotYetAppendedToDataFile.isEmpty()) { //If there is a pending append
+            String tmp = mTextNotYetAppendedToDataFile;
+            mTextNotYetAppendedToDataFile = "";
+            appendToFile(mCurrentFile.fileName, tmp);
+        }
     }
-}
 
 
     private void appendToFile(DriveFile file, String data) {
         final String text = data;
-        if (file == null){
+        if (file == null) {
             log("Programming Error: cannot append to file, it is null");
             return;
         }
@@ -247,14 +248,14 @@ private void continuePendingAppendOperation() {
                                                //For debugging - read content of file
                                                FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
                                                byte[] fileContent = new byte[fileInputStream.available()];
-                                               String str = new String(fileContent, "UTF-8");
-
                                                fileInputStream.read(fileContent);
+                                               String str = new String(fileContent, "UTF-8");
 
 
                                                FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
                                                Writer writer = new OutputStreamWriter(fileOutputStream);
                                                writer.write(text);
+                                               writer.flush();
                                                writer.close();
                                            } catch (IOException e) {
                                                log("Error writing to data file in Gdrive: " + e.toString());
@@ -349,7 +350,7 @@ private void continuePendingAppendOperation() {
     };
 
 
-    private void createWorkingDirectory(){
+    private void createWorkingDirectory() {
         log("Creating folder '" + mLocationName + "'");
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLocationName).build();
         mAquaFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(new ResultCallback<DriveFolder.DriveFolderResult>() {
@@ -369,8 +370,7 @@ private void continuePendingAppendOperation() {
     }
 
 
-
-    private void createEmptyLogfile(){
+    private void createEmptyLogfile() {
         log("Creating log file...");
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLogFileName).setMimeType("text/plain").build();
         mWorkingDirectory.createFile(mGoogleApiClient, changeSet, null).setResultCallback(new ResultCallback<DriveFolder.DriveFileResult>() {
@@ -412,8 +412,6 @@ private void continuePendingAppendOperation() {
             createEmptyLogfile();
         }
     };
-
-
 
 
     ResultCallback<DriveApi.MetadataBufferResult> rootChildrenRetrievedCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
