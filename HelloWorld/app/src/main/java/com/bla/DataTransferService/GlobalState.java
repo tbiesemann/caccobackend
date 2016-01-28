@@ -4,13 +4,19 @@ package com.bla.DataTransferService;
 import android.app.Activity;
 import android.content.SharedPreferences;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 public class GlobalState {
 
+    public BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
 //    GDriveUtilities driveUtilities;
 
     public GlobalState(){
         this.bluetoothUtilities = new BluetoothUtilities();
+        this.mMessageQueue =  new LinkedBlockingQueue<String>();
+
 //
 //        SharedPreferences settings = activity.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
 //        String locationName = settings.getString("locationID", "Regenbecken42");

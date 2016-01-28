@@ -25,15 +25,11 @@ public class MainActivity extends AppCompatActivity {
     Button btnForceSync;
     TextView console;
 
-    GlobalState state;
-    BlockingQueue<String> mMessageQueue;
 
     Thread mGDriveWriterThread;
 
 
     boolean isGdriveInitialized = false;
-
-//    private BluetoothUtilities mBluetoothUtilities;
 
 
     @Override
@@ -49,9 +45,6 @@ public class MainActivity extends AppCompatActivity {
         this.btnStart = (Button) findViewById(R.id.btnStart);
         this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
-
-
-        this.state = GlobalState.getInstance();
 
 
         try {
@@ -72,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
             this.log(ex.toString());
         }
 
-        mMessageQueue =  new LinkedBlockingQueue<String>();
 
 
         btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
@@ -92,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 if (mGDriveWriterThread != null){
                     String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
                     try {
-                        mMessageQueue.put("Test content for GDrive" + now + "\n");
+                        GlobalState.getInstance().mMessageQueue.put("Test content for GDrive" + now + "\n");
                     } catch (InterruptedException ex){
                         log("Upps - error writing test data");
                     }
@@ -101,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 log("Establish connection between bluetooth and GDrive...");
 
-                GDriveRunnable gDriveRunnable = new GDriveRunnable(gDriveUtilities, mMessageQueue);
+                GDriveRunnable gDriveRunnable = new GDriveRunnable(gDriveUtilities, GlobalState.getInstance().mMessageQueue);
                 mGDriveWriterThread = new Thread(gDriveRunnable);
                 mGDriveWriterThread.start();
             }
@@ -135,8 +127,8 @@ public class MainActivity extends AppCompatActivity {
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
-        state.bluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
-        state.bluetoothUtilities.setLogger(new ILogger() {
+        GlobalState.getInstance().bluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
+        GlobalState.getInstance().bluetoothUtilities.setLogger(new ILogger() {
             @Override
             public void onLog(String text) {
                 log(text);
@@ -144,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
 
             public void onLogAsync(String text) {
                 try {
-                    if (mMessageQueue != null) {
-                        mMessageQueue.put(text); //Write message from bluetooth onto the queue
+                    if (GlobalState.getInstance().mMessageQueue != null) {
+                        GlobalState.getInstance().mMessageQueue.put(text); //Write message from bluetooth onto the queue
                     }
                 } catch (InterruptedException ex){
                     log("Error writing onto queue:" + ex.toString());
@@ -158,16 +150,16 @@ public class MainActivity extends AppCompatActivity {
     private void openBluetoothConnection() {
 
         //Make sure bluetooth is turned on
-        BluetoothAdapter mBluetoothAdapter = state.bluetoothUtilities.getBluetoothAdapter();
+        BluetoothAdapter mBluetoothAdapter = GlobalState.getInstance().bluetoothUtilities.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
             this.log("Bluetooth adapter is not available");
             return;
         }
-        state.bluetoothUtilities.enableBluetoothAdapter();
+        GlobalState.getInstance().bluetoothUtilities.enableBluetoothAdapter();
 
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String deviceName = settings.getString("deviceName", "");
-        state.bluetoothUtilities.establishConnection(deviceName);
+        GlobalState.getInstance().bluetoothUtilities.establishConnection(deviceName);
     }
 
     public void log(String text) {
