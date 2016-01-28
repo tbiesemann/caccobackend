@@ -30,10 +30,6 @@
             android:label="@string/title_activity_bluetooth_settings"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".GmailSettingsActivity"
-            android:label="@string/title_activity_upload_settings"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".GeneralSettingsActivity"
             android:label="@string/title_activity_general_settings"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -41,13 +37,10 @@
             android:name=".FilesOnDeviceActivity"
             android:label="@string/title_activity_files_on_device"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".TerminalActivity" />
 
         <meta-data
             android:name="com.bla.DataTransferService"
             android:value="id=AIzaSyC7UFV7kn2htkn7UTR_weqYsbY6cs1M4Q8" />
-
-        <activity android:name=".GmailUploadActivity"></activity>
     </application>
 
 </manifest>

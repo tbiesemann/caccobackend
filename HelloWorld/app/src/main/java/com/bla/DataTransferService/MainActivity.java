@@ -3,6 +3,8 @@ package com.bla.DataTransferService;
 import android.bluetooth.BluetoothAdapter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -12,11 +14,7 @@ import android.content.Intent;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ILogger {
 
     GDriveUtilities gDriveUtilities;
     Button btnConnectGDrive;
@@ -30,6 +28,18 @@ public class MainActivity extends AppCompatActivity {
 
 
     boolean isGdriveInitialized = false;
+
+//
+//    public Handler handler = new Handler() {
+//        @Override
+//        public  void handleMessage(Message msg) {
+//            log(msg.obj.toString());
+////            Log.d(TAG, String.format("Handler.handleMessage(): msg=%s", msg));
+//            // This is where main activity thread receives messages
+//            // Put here your handling of incoming messages posted by other threads
+//            super.handleMessage(msg);
+//        }
+//    };
 
 
     @Override
@@ -46,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
         this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
 
-        GlobalState.getInstance().setActivity(this);
+        GlobalState.getInstance().setActivity(this, this);
+//        GlobalState.getInstance().setHandler(this.handler);
+
 
 
         try {
@@ -118,6 +130,17 @@ public class MainActivity extends AppCompatActivity {
         });
 
         this.createBluetoothUtilities();
+
+    }
+
+
+
+    public void onLog(String text){
+log(text);
+    }
+
+
+    public void onLogAsync(String msg) {
 
     }
 
