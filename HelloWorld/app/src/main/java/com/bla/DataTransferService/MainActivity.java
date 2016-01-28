@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements ILogger {
 
-    GDriveUtilities gDriveUtilities;
+    //    GDriveUtilities gDriveUtilities;
     Button btnConnectGDrive;
     Button btnOpenBluetoothConnection;
     Button btnStart;
@@ -24,10 +24,8 @@ public class MainActivity extends AppCompatActivity implements ILogger {
     TextView console;
 
 
-    Thread mGDriveWriterThread;
 
-
-    boolean isGdriveInitialized = false;
+//    boolean isGdriveInitialized = false;
 
 
     @Override
@@ -44,65 +42,49 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
 
-        GlobalState.getInstance().setActivity(this, this);
-
-
         try {
-            this.gDriveUtilities = GDriveUtilitiesFactory.createGDriveUtilities(this);
-            this.gDriveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IconnectCompletedEventHandler() {
-                @Override
-                public void handle() {
-                    isGdriveInitialized = true;
-                }
-            });
-
-            this.gDriveUtilities.setLogger(new IGDriveLogger() {
-                public void onLog(String text) {
-                    GlobalState.getInstance().log(text);
-                }
-            });
+            GlobalState.getInstance().setActivity(this, this);
         } catch (Exception ex) {
-            GlobalState.getInstance().log(ex.toString());
+            this.log("Something went really wrong: " + ex.toString());
         }
 
+
+//        try {
+//            GlobalState.getInstance().driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IconnectCompletedEventHandler() {
+//                @Override
+//                public void handle() {
+//                    isGdriveInitialized = true;
+//                }
+//            });
+//
+//            this.gDriveUtilities.setLogger(new IGDriveLogger() {
+//                public void onLog(String text) {
+//                    GlobalState.getInstance().log(text);
+//                }
+//            });
+//
+//        } catch (Exception ex) {
+//            GlobalState.getInstance().log(ex.toString());
+//        }
 
 
         btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 GlobalState.getInstance().log("Connecting to GDrive...");
-                gDriveUtilities.connect();
+                GlobalState.getInstance().driveUtilities.connect();
             }
         });
 
         btnStart.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
-                if (isGdriveInitialized != true) {
-                    GlobalState.getInstance().log("Error: Cannot start - GDrive is not yet initialized!");
-                    return;
-                }
-                if (mGDriveWriterThread != null){
-                    String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
-                    try {
-                        GlobalState.getInstance().mMessageQueue.put("Test content for GDrive" + now + "\n");
-                    } catch (InterruptedException ex){
-                        GlobalState.getInstance().log("Upps - error writing test data");
-                    }
-                    GlobalState.getInstance().log("Error: Already started.....");
-                    return;
-                }
-                GlobalState.getInstance().log("Establish connection between bluetooth and GDrive...");
-
-                GDriveRunnable gDriveRunnable = new GDriveRunnable(gDriveUtilities, GlobalState.getInstance().mMessageQueue);
-                mGDriveWriterThread = new Thread(gDriveRunnable);
-                mGDriveWriterThread.start();
+                GlobalState.getInstance().start();
             }
         });
 
         this.btnForceSync.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (gDriveUtilities != null){
-                    gDriveUtilities.forceSync();
+                if (GlobalState.getInstance().driveUtilities != null) {
+                    GlobalState.getInstance().driveUtilities.forceSync();
                 }
             }
         });
@@ -118,8 +100,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         this.createBluetoothUtilities();
 
     }
-
-
 
 
     private void createBluetoothUtilities() {
@@ -152,20 +132,13 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
         String consoleText = console.getText().toString();
         int length = consoleText.length();
-        if (length > maxConsoleLength){
+        if (length > maxConsoleLength) {
             consoleText = consoleText.substring(length - maxConsoleLength, length);
         }
 
         console.setText(consoleText + "\n" + text);
         System.out.println(text);
-        try {
-            gDriveUtilities.appendToLogFile(text);
-        } catch (Exception ex) {
-            if (isGdriveInitialized) {
-                console.setText(console.getText() + "\n" + "Cannot write log to gdrive");
-                System.out.println(text);
-            }
-        }
+
     }
 
 
@@ -197,12 +170,10 @@ public class MainActivity extends AppCompatActivity implements ILogger {
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         switch (requestCode) {
-
             case GDriveUtilities.REQUEST_CODE_RESOLUTION:
-
                 if (resultCode == RESULT_OK) {
                     GlobalState.getInstance().log("Trying to connect after sign in");
-                    gDriveUtilities.connect();
+                    GlobalState.getInstance().driveUtilities.connect();
                 } else if (resultCode == RESULT_CANCELED) {
                     GlobalState.getInstance().log("Sign in failed - cancelled");
                 } else {

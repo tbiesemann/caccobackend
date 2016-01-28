@@ -13,15 +13,15 @@ public class GlobalState {
     public BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
-    //    boolean isGdriveInitialized = false;
-//    GDriveUtilities driveUtilities;
+    boolean isGdriveInitialized = false;
+    public GDriveUtilities driveUtilities;
     private Activity activity;
     private Handler handler;
     private ILogger consoleLogger;
-
+    private Thread mGDriveWriterThread;
 
     public GlobalState() {
-        this.bluetoothUtilities = new BluetoothUtilities();
+
         this.mMessageQueue = new LinkedBlockingQueue<String>();
 
 
@@ -30,11 +30,19 @@ public class GlobalState {
             public void handleMessage(Message msg) {
                 String text = msg.obj.toString();
                 consoleLogger.log(text);
+                if (isGdriveInitialized) {
+                    try {
+                        driveUtilities.appendToLogFile(text);
+                    } catch (Exception ex) {
+                        if (isGdriveInitialized) {
+                            consoleLogger.log("Cannot write log to gdrive");
+                        }
+                    }
+                }
                 super.handleMessage(msg);
             }
         };
     }
-
 
 
     private static GlobalState instance;
@@ -47,10 +55,18 @@ public class GlobalState {
     }
 
 
-    public void setActivity(Activity activity, ILogger logger) {
+    public void setActivity(Activity activity, ILogger logger) throws Exception {
         this.consoleLogger = logger;
         this.activity = activity;
         this.settings = new Settings(activity);
+        this.bluetoothUtilities = new BluetoothUtilities();
+        this.driveUtilities = new GDriveUtilities(activity);
+        this.driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IconnectCompletedEventHandler() {
+            @Override
+            public void handle() {
+                isGdriveInitialized = true;
+            }
+        });
     }
 
 
@@ -66,6 +82,30 @@ public class GlobalState {
             this.mMessageQueue.put(data);
         } catch (InterruptedException ex) {
             log("Error writing onto queue:" + ex.toString());
+        }
+    }
+
+
+    public void start() {
+        if (isGdriveInitialized != true) {
+            log("Error: Cannot start - GDrive is not yet initialized!");
+            return;
+        }
+
+        if (mGDriveWriterThread != null) {
+            log("Error: Already started.....");
+            String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
+            try {
+                GlobalState.getInstance().mMessageQueue.put("Test content for GDrive" + now + "\n");
+            } catch (InterruptedException ex) {
+                log("Upps - error writing test data");
+            }
+            return;
+        } else {
+            log("Establish connection between bluetooth and GDrive...");
+            GDriveRunnable gDriveRunnable = new GDriveRunnable(driveUtilities, mMessageQueue);
+            mGDriveWriterThread = new Thread(gDriveRunnable);
+            mGDriveWriterThread.start();
         }
     }
 
