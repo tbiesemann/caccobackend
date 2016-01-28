@@ -85,9 +85,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
     private void log(String text) {
         GlobalState.getInstance().log(text);
-//        if (this.mLogger != null) {
-//            this.mLogger.onLog(text);
-//        }
     }
 
 
@@ -122,13 +119,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         if (mLogFile == null) {
             throw new Exception("Log file does not exist");
         }
-
-//
-//        Message msg = Message.obtain();
-//        msg.obj = "Hello from worker thread";
-//        Handler handler = GlobalState.getInstance().getHandler();
-//        GlobalState.getInstance().getHandler().sendMessage(msg);
-
 
 
         String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();

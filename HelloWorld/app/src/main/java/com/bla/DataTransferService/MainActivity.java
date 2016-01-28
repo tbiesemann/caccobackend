@@ -29,18 +29,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
     boolean isGdriveInitialized = false;
 
-//
-//    public Handler handler = new Handler() {
-//        @Override
-//        public  void handleMessage(Message msg) {
-//            log(msg.obj.toString());
-////            Log.d(TAG, String.format("Handler.handleMessage(): msg=%s", msg));
-//            // This is where main activity thread receives messages
-//            // Put here your handling of incoming messages posted by other threads
-//            super.handleMessage(msg);
-//        }
-//    };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +45,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         this.console = (TextView) findViewById(R.id.txtConsole);
 
         GlobalState.getInstance().setActivity(this, this);
-//        GlobalState.getInstance().setHandler(this.handler);
-
 
 
         try {
@@ -72,18 +58,18 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
             this.gDriveUtilities.setLogger(new IGDriveLogger() {
                 public void onLog(String text) {
-                    log(text);
+                    GlobalState.getInstance().log(text);
                 }
             });
         } catch (Exception ex) {
-            this.log(ex.toString());
+            GlobalState.getInstance().log(ex.toString());
         }
 
 
 
         btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                log("Connecting to GDrive...");
+                GlobalState.getInstance().log("Connecting to GDrive...");
                 gDriveUtilities.connect();
             }
         });
@@ -92,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements ILogger {
             public void onClick(View v) {
 
                 if (isGdriveInitialized != true) {
-                    log("Error: Cannot start - GDrive is not yet initialized!");
+                    GlobalState.getInstance().log("Error: Cannot start - GDrive is not yet initialized!");
                     return;
                 }
                 if (mGDriveWriterThread != null){
@@ -100,12 +86,12 @@ public class MainActivity extends AppCompatActivity implements ILogger {
                     try {
                         GlobalState.getInstance().mMessageQueue.put("Test content for GDrive" + now + "\n");
                     } catch (InterruptedException ex){
-                        log("Upps - error writing test data");
+                        GlobalState.getInstance().log("Upps - error writing test data");
                     }
-                    log("Error: Already started.....");
+                    GlobalState.getInstance().log("Error: Already started.....");
                     return;
                 }
-                log("Establish connection between bluetooth and GDrive...");
+                GlobalState.getInstance().log("Establish connection between bluetooth and GDrive...");
 
                 GDriveRunnable gDriveRunnable = new GDriveRunnable(gDriveUtilities, GlobalState.getInstance().mMessageQueue);
                 mGDriveWriterThread = new Thread(gDriveRunnable);
@@ -123,9 +109,9 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
         this.btnOpenBluetoothConnection.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                log("Opening bluetooth...");
+                GlobalState.getInstance().log("Opening bluetooth...");
                 openBluetoothConnection();
-                log("Done opening bluetooth connection");
+                GlobalState.getInstance().log("Done opening bluetooth connection");
             }
         });
 
@@ -135,40 +121,14 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
 
 
-    public void onLog(String text){
-log(text);
-    }
-
-
-    public void onLogAsync(String msg) {
-
-    }
-
 
     private void createBluetoothUtilities() {
-
-//        this.mBluetoothUtilities = state.bluetoothUtilitiesBluetoothUtilitiesFactory.getBluetoothUtilities();
 
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
         GlobalState.getInstance().bluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
-        GlobalState.getInstance().bluetoothUtilities.setLogger(new ILogger() {
-            @Override
-            public void onLog(String text) {
-                log(text);
-            }
 
-            public void onLogAsync(String text) {
-                try {
-                    if (GlobalState.getInstance().mMessageQueue != null) {
-                        GlobalState.getInstance().mMessageQueue.put(text); //Write message from bluetooth onto the queue
-                    }
-                } catch (InterruptedException ex){
-                    log("Error writing onto queue:" + ex.toString());
-                }
-            }
-        });
     }
 
 
@@ -177,7 +137,7 @@ log(text);
         //Make sure bluetooth is turned on
         BluetoothAdapter mBluetoothAdapter = GlobalState.getInstance().bluetoothUtilities.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
-            this.log("Bluetooth adapter is not available");
+            GlobalState.getInstance().log("Bluetooth adapter is not available");
             return;
         }
         GlobalState.getInstance().bluetoothUtilities.enableBluetoothAdapter();
@@ -241,12 +201,12 @@ log(text);
             case GDriveUtilities.REQUEST_CODE_RESOLUTION:
 
                 if (resultCode == RESULT_OK) {
-                    this.log("Trying to connect after sign in");
+                    GlobalState.getInstance().log("Trying to connect after sign in");
                     gDriveUtilities.connect();
                 } else if (resultCode == RESULT_CANCELED) {
-                    this.log("Sign in failed - cancelled");
+                    GlobalState.getInstance().log("Sign in failed - cancelled");
                 } else {
-                    this.log("Sign in failed!");
+                    GlobalState.getInstance().log("Sign in failed!");
                 }
                 break;
         }

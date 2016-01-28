@@ -26,23 +26,21 @@ public class BluetoothUtilities {
     }
 
 
-    ILogger logger;
-
-    public void setLogger(ILogger listener) {
-        logger = listener;
-    }
+//    ILogger logger;
+//
+//    public void setLogger(ILogger listener) {
+//        logger = listener;
+//    }
 
     private void log(String text) {
-        if (this.logger != null) {
-            this.logger.onLog(text);
-        }
+        GlobalState.getInstance().log(text);
     }
-
-    private void logAsync(String text) {
-        if (this.logger != null) {
-            this.logger.onLogAsync(text);
-        }
-    }
+//
+//    private void logAsync(String text) {
+//        if (this.logger != null) {
+//            this.logger.onLogAsync(text);
+//        }
+//    }
 
 
     public BluetoothAdapter getBluetoothAdapter() {
@@ -128,7 +126,7 @@ public class BluetoothUtilities {
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
-                                    logAsync(data);
+                                    GlobalState.getInstance().handleIncomingData(data);
                                 } else {
                                     readBuffer[readBufferPosition++] = b;
                                 }
