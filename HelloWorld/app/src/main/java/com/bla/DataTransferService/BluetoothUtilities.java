@@ -26,21 +26,10 @@ public class BluetoothUtilities {
     }
 
 
-//    ILogger logger;
-//
-//    public void setLogger(ILogger listener) {
-//        logger = listener;
-//    }
-
     private void log(String text) {
         GlobalState.getInstance().log(text);
     }
-//
-//    private void logAsync(String text) {
-//        if (this.logger != null) {
-//            this.logger.onLogAsync(text);
-//        }
-//    }
+
 
 
     public BluetoothAdapter getBluetoothAdapter() {

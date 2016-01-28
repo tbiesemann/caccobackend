@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         this.btnStart = (Button) findViewById(R.id.btnStart);
         this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
+        this.console.setText(consoleText);
 
         try {
             GlobalState.getInstance().setActivity(this, this);
@@ -83,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
 
     private void openBluetoothConnection() {
-
         //Make sure bluetooth is turned on
         BluetoothAdapter mBluetoothAdapter = GlobalState.getInstance().bluetoothUtilities.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
@@ -97,24 +97,23 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         GlobalState.getInstance().bluetoothUtilities.establishConnection(deviceName);
     }
 
+
+    private static String consoleText = "";
     public void log(String text) {
         int maxConsoleLength = 4000;
 
-        String consoleText = console.getText().toString();
         int length = consoleText.length();
         if (length > maxConsoleLength) {
             consoleText = consoleText.substring(0 , maxConsoleLength);
         }
-
-        console.setText(text + "\n" + consoleText);
+        consoleText = text + "\n" + consoleText;
+        console.setText(consoleText);
         System.out.println(text);
-
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
