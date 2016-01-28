@@ -34,7 +34,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     Activity mActivity;
     private GoogleApiClient mGoogleApiClient;
     private IGDriveLogger mLogger;
-    private String mLocationName;
     private CurrentFile mCurrentFile;
     private DriveFile mLogFile;
 
@@ -42,11 +41,10 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     public static final int REQUEST_CODE_RESOLUTION = 42;
 
 
-    public GDriveUtilities(Activity activity, String locationName) throws Exception {
+    public GDriveUtilities(Activity activity) throws Exception {
         if (activity == null) {
             throw new Exception("Mandatory activity missing");
         }
-        this.mLocationName = locationName;
         this.mActivity = activity;
         mGoogleApiClient = new GoogleApiClient.Builder(this.mActivity)
                 .addApi(Drive.API)
@@ -361,15 +359,16 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 return;
             }
             int length = result.getMetadataBuffer().getCount();
+            String locationName = GlobalState.getInstance().settings.getLocation();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(mLocationName)) {
+                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals(locationName)) {
                     if (metadata.isTrashed()) {
-                        log(mLocationName + " folder is trashed...will be ignored");
+                        log(locationName + " folder is trashed...will be ignored");
                     } else {
                         DriveId workingDirectoryDriveId = metadata.getDriveId();
                         mWorkingDirectory = workingDirectoryDriveId.asDriveFolder();
-                        log("Successfully found '" + mLocationName + "' folder");
+                        log("Successfully found '" + locationName + "' folder");
 
                         log("Looking for an existing log file...");
                         mWorkingDirectory.listChildren(mGoogleApiClient).setResultCallback(workingDirectoryChildrenRetrievedForLogFileCallback);
@@ -384,18 +383,18 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
 
     private void createWorkingDirectory() {
-        log("Creating folder '" + mLocationName + "'");
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mLocationName).build();
+        final String locationName = GlobalState.getInstance().settings.getLocation();
+        log("Creating folder '" + locationName + "'");
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(locationName).build();
         mAquaFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(new ResultCallback<DriveFolder.DriveFolderResult>() {
             @Override
             public void onResult(DriveFolder.DriveFolderResult result) {
                 if (!result.getStatus().isSuccess()) {
-                    log("Cannot create '" + mLocationName + "' folder in GDrive");
+                    log("Cannot create '" + locationName + "' folder in GDrive");
                     return;
                 }
-                log("Folder '" + mLocationName + "' created in GDrive");
+                log("Folder '" + locationName + "' created in GDrive");
                 mWorkingDirectory = result.getDriveFolder();
-
                 createEmptyLogfile();
             }
         });

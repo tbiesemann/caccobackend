@@ -3,7 +3,7 @@ package com.bla.DataTransferService;
 
 import java.util.concurrent.BlockingQueue;
 
-public class GDriveRunnable  implements Runnable {
+public class GDriveRunnable implements Runnable {
 
     GDriveUtilities mGDriveUtilities;
     BlockingQueue<String> mQueue;
