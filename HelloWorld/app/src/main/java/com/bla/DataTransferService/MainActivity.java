@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
     Button btnForceSync;
     TextView console;
 
+    GlobalState state;
     BlockingQueue<String> mMessageQueue;
 
     Thread mGDriveWriterThread;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     boolean isGdriveInitialized = false;
 
-    private BluetoothUtilities mBluetoothUtilities;
+//    private BluetoothUtilities mBluetoothUtilities;
 
 
     @Override
@@ -43,12 +44,15 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
-
         this.btnConnectGDrive = (Button) findViewById(R.id.btnConnectGDrive);
         this.btnOpenBluetoothConnection = (Button) findViewById(R.id.btnOpenBluetoothConnection);
         this.btnStart = (Button) findViewById(R.id.btnStart);
         this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
+
+
+        this.state = GlobalState.getInstance();
+
 
         try {
             this.gDriveUtilities = GDriveUtilitiesFactory.createGDriveUtilities(this);
@@ -126,13 +130,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void createBluetoothUtilities() {
 
-        this.mBluetoothUtilities = BluetoothUtilitiesFactory.getBluetoothUtilities();
+//        this.mBluetoothUtilities = state.bluetoothUtilitiesBluetoothUtilitiesFactory.getBluetoothUtilities();
 
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
-        this.mBluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
-        this.mBluetoothUtilities.setLogger(new ILogger() {
+        state.bluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
+        state.bluetoothUtilities.setLogger(new ILogger() {
             @Override
             public void onLog(String text) {
                 log(text);
@@ -154,16 +158,16 @@ public class MainActivity extends AppCompatActivity {
     private void openBluetoothConnection() {
 
         //Make sure bluetooth is turned on
-        BluetoothAdapter mBluetoothAdapter = this.mBluetoothUtilities.getBluetoothAdapter();
+        BluetoothAdapter mBluetoothAdapter = state.bluetoothUtilities.getBluetoothAdapter();
         if (mBluetoothAdapter == null) {
             this.log("Bluetooth adapter is not available");
             return;
         }
-        this.mBluetoothUtilities.enableBluetoothAdapter();
+        state.bluetoothUtilities.enableBluetoothAdapter();
 
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String deviceName = settings.getString("deviceName", "");
-        this.mBluetoothUtilities.establishConnection(deviceName);
+        state.bluetoothUtilities.establishConnection(deviceName);
     }
 
     public void log(String text) {
