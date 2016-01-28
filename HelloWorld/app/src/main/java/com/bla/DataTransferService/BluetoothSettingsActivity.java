@@ -1,6 +1,6 @@
 package com.bla.DataTransferService;
 
-import android.bluetooth.BluetoothAdapter;
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +17,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
     EditText txtBluetoothDeviceName;
     CheckBox cbxUseWindowsLineEndings;
+    Button btnShowPairedDevices;
+    TextView console;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +29,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
         txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
         cbxUseWindowsLineEndings = (CheckBox) findViewById(R.id.cbxUseRN);
-
+        btnShowPairedDevices = (Button) findViewById(R.id.btnShowPairedDevices);
+        console = (TextView) findViewById(R.id.txtConsole);
 
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
@@ -55,7 +58,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         });
 
 
-        final Button btnShowPairedDevices = (Button) findViewById(R.id.btnShowPairedDevices);
         btnShowPairedDevices.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 List<String> devices =  GlobalState.getInstance().bluetoothUtilities.getPairedDevicesAsString();
@@ -68,9 +70,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
     }
 
 
-
     public void log(String text) {
-        TextView console = (TextView) findViewById(R.id.txtConsole);
         console.setText(console.getText() + "\n" + text);
         System.out.println(text);
     }
