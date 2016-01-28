@@ -13,12 +13,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-//
-//interface ILogger {
-//    void onLog(String msg);
-//
-//    void onLogAsync(String msg);
-//}
 
 public class BluetoothUtilities {
 

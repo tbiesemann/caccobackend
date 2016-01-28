@@ -17,8 +17,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
     EditText txtBluetoothDeviceName;
     CheckBox cbxUseWindowsLineEndings;
-    Button btnTestConnection;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +27,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
         txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
         cbxUseWindowsLineEndings = (CheckBox) findViewById(R.id.cbxUseRN);
-        btnTestConnection = (Button) findViewById(R.id.btnTestBluetoothConnection);
+
 
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
@@ -37,15 +35,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         txtBluetoothDeviceName.setText(deviceName);
         boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
         cbxUseWindowsLineEndings.setChecked(useWindowsLineEndings);
-
-
-        btnTestConnection.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                btnTestConnection.setText("Opening Connection...");
-                testConnection();
-                btnTestConnection.setText("Open Connection");
-            }
-        });
 
 
         final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
@@ -76,26 +65,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
             }
         });
 
-
-        this.createBluetoothUtilities();
     }
 
-
-    private void createBluetoothUtilities(){
-
-
-
-        GlobalState.getInstance().bluetoothUtilities.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
-        GlobalState.getInstance().bluetoothUtilities.setLogger(new ILogger() {
-            @Override
-            public void onLog(String text) {
-                log(text);
-            }
-
-            public void onLogAsync(String text) {
-            }
-        });
-    }
 
 
     public void log(String text) {
@@ -103,23 +74,6 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         console.setText(console.getText() + "\n" + text);
         System.out.println(text);
     }
-
-
-    private void testConnection() {
-
-        GlobalState.getInstance().bluetoothUtilities.useWindowsLineEndings = cbxUseWindowsLineEndings.isChecked();
-
-        //Make sure bluetoothUtilities is turned on
-        BluetoothAdapter mBluetoothAdapter =  GlobalState.getInstance().bluetoothUtilities.getBluetoothAdapter();
-        if (mBluetoothAdapter == null) {
-            this.log("Bluetooth adapter is not available");
-            return;
-        }
-        GlobalState.getInstance().bluetoothUtilities.enableBluetoothAdapter();
-        String deviceName = ((EditText) findViewById(R.id.txtBluetoothDeviceName)).getText().toString();
-        GlobalState.getInstance().bluetoothUtilities.establishConnection(deviceName);
-    }
-
 
 
     @Override
