@@ -129,7 +129,7 @@ public class BluetoothUtilities {
                             for (int i = 0; i < bytesAvailable; i++) {
                                 byte b = packetBytes[i];
 
-                                if ( ((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 10) && (packetBytes[i + 1] == 13)) ){
+                                if ( ((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10)) ){
                                     byte[] encodedBytes = new byte[readBufferPosition];
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");

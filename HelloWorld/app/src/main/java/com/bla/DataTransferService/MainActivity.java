@@ -68,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
             this.log(ex.toString());
         }
 
+        mMessageQueue =  new LinkedBlockingQueue<String>();
+
 
         btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 log("Establish connection between bluetooth and GDrive...");
-                mMessageQueue =  new LinkedBlockingQueue<String>();
+
                 GDriveRunnable gDriveRunnable = new GDriveRunnable(gDriveUtilities, mMessageQueue);
                 mGDriveWriterThread = new Thread(gDriveRunnable);
                 mGDriveWriterThread.start();
@@ -138,7 +140,9 @@ public class MainActivity extends AppCompatActivity {
 
             public void onLogAsync(String text) {
                 try {
-                    mMessageQueue.put(text); //Write message from bluetooth onto the queue
+                    if (mMessageQueue != null) {
+                        mMessageQueue.put(text); //Write message from bluetooth onto the queue
+                    }
                 } catch (InterruptedException ex){
                     log("Error writing onto queue:" + ex.toString());
                 }
