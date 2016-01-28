@@ -3,8 +3,6 @@ package com.bla.DataTransferService;
 import android.bluetooth.BluetoothAdapter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -16,17 +14,11 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements ILogger {
 
-    //    GDriveUtilities gDriveUtilities;
     Button btnConnectGDrive;
     Button btnOpenBluetoothConnection;
     Button btnStart;
     Button btnForceSync;
     TextView console;
-
-
-
-//    boolean isGdriveInitialized = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +26,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
 
         this.btnConnectGDrive = (Button) findViewById(R.id.btnConnectGDrive);
         this.btnOpenBluetoothConnection = (Button) findViewById(R.id.btnOpenBluetoothConnection);
@@ -47,26 +38,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         } catch (Exception ex) {
             this.log("Something went really wrong: " + ex.toString());
         }
-
-
-//        try {
-//            GlobalState.getInstance().driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IconnectCompletedEventHandler() {
-//                @Override
-//                public void handle() {
-//                    isGdriveInitialized = true;
-//                }
-//            });
-//
-//            this.gDriveUtilities.setLogger(new IGDriveLogger() {
-//                public void onLog(String text) {
-//                    GlobalState.getInstance().log(text);
-//                }
-//            });
-//
-//        } catch (Exception ex) {
-//            GlobalState.getInstance().log(ex.toString());
-//        }
-
 
         btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -103,7 +74,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
 
     private void createBluetoothUtilities() {
-
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
@@ -133,10 +103,10 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         String consoleText = console.getText().toString();
         int length = consoleText.length();
         if (length > maxConsoleLength) {
-            consoleText = consoleText.substring(length - maxConsoleLength, length);
+            consoleText = consoleText.substring(0 , maxConsoleLength);
         }
 
-        console.setText(consoleText + "\n" + text);
+        console.setText(text + "\n" + consoleText);
         System.out.println(text);
 
     }
