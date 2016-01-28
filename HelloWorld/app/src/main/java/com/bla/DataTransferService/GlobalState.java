@@ -11,7 +11,9 @@ public class GlobalState {
 
     public BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
+    public Settings settings;
 //    GDriveUtilities driveUtilities;
+    private Activity activity;
 
     public GlobalState(){
         this.bluetoothUtilities = new BluetoothUtilities();
@@ -31,5 +33,11 @@ public class GlobalState {
             instance = new GlobalState();
         }
         return instance;
+    }
+
+
+    public void setActivity(Activity activity){
+        this.activity = activity;
+        this.settings = new Settings(activity);
     }
 }

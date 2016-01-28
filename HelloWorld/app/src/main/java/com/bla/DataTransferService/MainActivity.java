@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
         this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
 
+        GlobalState.getInstance().setActivity(this);
+
 
         try {
             this.gDriveUtilities = GDriveUtilitiesFactory.createGDriveUtilities(this);

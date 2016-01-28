@@ -10,8 +10,9 @@ public class GDriveUtilitiesFactory {
 
     public static GDriveUtilities createGDriveUtilities(Activity activity) throws Exception{
         if (utils == null){
-            SharedPreferences settings = activity.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
-            String locationName = settings.getString("locationID", "Regenbecken42");
+//            SharedPreferences settings = activity.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
+//            String locationName = settings.getString("locationID", "Regenbecken42");
+            String locationName = GlobalState.getInstance().settings.getLocation();
 
             utils = new GDriveUtilities(activity, locationName);
         }
