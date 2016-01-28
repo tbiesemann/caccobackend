@@ -201,20 +201,11 @@ public class MainActivity extends AppCompatActivity {
             case (R.id.menu_bluetooth):
                 this.startActivity(new Intent(this, BluetoothSettingsActivity.class));
                 return true;
-            case (R.id.menu_gmail):
-                this.startActivity(new Intent(this, GmailSettingsActivity.class));
-                return true;
             case (R.id.menu_general):
                 this.startActivity(new Intent(this, GeneralSettingsActivity.class));
                 return true;
             case (R.id.menu_files):
                 this.startActivity(new Intent(this, FilesOnDeviceActivity.class));
-                return true;
-            case (R.id.menu_terminal):
-                this.startActivity(new Intent(this, TerminalActivity.class));
-                return true;
-            case (R.id.menu_gmail_upload):
-                this.startActivity(new Intent(this, GmailUploadActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
