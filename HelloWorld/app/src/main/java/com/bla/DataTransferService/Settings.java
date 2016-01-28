@@ -5,15 +5,27 @@ import android.content.SharedPreferences;
 
 
 public class Settings {
-    private Activity activity;
+    private SharedPreferences settings;
+
     public Settings(Activity activity){
-        this.activity = activity;
+        this.settings = activity.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
+
     }
 
 
     public String getLocation(){
-        SharedPreferences settings = activity.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
         String locationName = settings.getString("locationID", "Regenbecken42");
         return locationName;
     }
+
+
+    public boolean getUseWindowsLineEndings(){
+        boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
+        return useWindowsLineEndings;
+    }
+
+    public String getDeviceName(){
+        return settings.getString("deviceName", "");
+    }
+
 }

@@ -68,33 +68,15 @@ public class MainActivity extends AppCompatActivity implements ILogger {
                 GlobalState.getInstance().log("Done opening bluetooth connection");
             }
         });
-
-        this.createBluetoothUtilities();
-
     }
 
-
-    private void createBluetoothUtilities() {
-        //Read from Settings
-        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
-        boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
-        GlobalState.getInstance().bluetoothUtilities.useWindowsLineEndings = useWindowsLineEndings;
-
-    }
 
 
     private void openBluetoothConnection() {
-        //Make sure bluetooth is turned on
-        BluetoothAdapter mBluetoothAdapter = GlobalState.getInstance().bluetoothUtilities.getBluetoothAdapter();
-        if (mBluetoothAdapter == null) {
-            GlobalState.getInstance().log("Bluetooth adapter is not available");
-            return;
-        }
-        GlobalState.getInstance().bluetoothUtilities.enableBluetoothAdapter();
 
-        SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
-        String deviceName = settings.getString("deviceName", "");
-        GlobalState.getInstance().bluetoothUtilities.establishConnection(deviceName);
+
+
+        GlobalState.getInstance().bluetoothUtilities.establishConnection();
     }
 
 

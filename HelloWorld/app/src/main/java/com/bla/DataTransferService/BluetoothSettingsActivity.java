@@ -34,7 +34,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
-        String deviceName = settings.getString("deviceName", "");
+        String deviceName = settings.getString("deviceName", "HC-06");
         txtBluetoothDeviceName.setText(deviceName);
         boolean useWindowsLineEndings = settings.getBoolean("useWindowsLineEndings", false);
         cbxUseWindowsLineEndings.setChecked(useWindowsLineEndings);

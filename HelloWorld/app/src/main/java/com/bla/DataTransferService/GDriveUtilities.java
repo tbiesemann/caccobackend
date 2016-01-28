@@ -35,7 +35,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     final String mLogFileName = "log.txt";
     Activity mActivity;
     private GoogleApiClient mGoogleApiClient;
-//    private IGDriveLogger mLogger;
     private CurrentFile mCurrentFile;
     private DriveFile mLogFile;
 
@@ -79,9 +78,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-//    public void setLogger(IGDriveLogger listener) {
-//        mLogger = listener;
-//    }
 
     private void log(String text) {
         GlobalState.getInstance().log(text);

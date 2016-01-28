@@ -20,7 +20,6 @@ public class BluetoothUtilities {
     private BluetoothSocket mSocket;
     private OutputStream mOutputStream;
     private InputStream mInputStream;
-    public boolean useWindowsLineEndings = false;
 
     public BluetoothUtilities() {
     }
@@ -29,7 +28,6 @@ public class BluetoothUtilities {
     private void log(String text) {
         GlobalState.getInstance().log(text);
     }
-
 
 
     public BluetoothAdapter getBluetoothAdapter() {
@@ -55,7 +53,12 @@ public class BluetoothUtilities {
     }
 
 
-    public void establishConnection(String deviceName) {
+    public void establishConnection() {
+
+        //Make sure bluetooth is turned on
+        enableBluetoothAdapter();
+
+        String deviceName = GlobalState.getInstance().settings.getDeviceName();
         BluetoothDevice device;
         device = this.getDeviceByName(deviceName);
         if (device == null) {
@@ -109,8 +112,9 @@ public class BluetoothUtilities {
                             mInputStream.read(packetBytes);
                             for (int i = 0; i < bytesAvailable; i++) {
                                 byte b = packetBytes[i];
+                                boolean useWindowsLineEndings = GlobalState.getInstance().settings.getUseWindowsLineEndings();
 
-                                if ( ((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10)) ){
+                                if (((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10))) {
                                     byte[] encodedBytes = new byte[readBufferPosition];
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
@@ -128,22 +132,6 @@ public class BluetoothUtilities {
             }
         });
         workerThread.start();
-    }
-
-
-    public void sendData(String data) throws IOException {
-        if (mOutputStream == null) {
-            this.log("Cannot send data - connection is not established");
-            return;
-        }
-        String msg;
-        if (this.useWindowsLineEndings) {
-            msg = data + "\r\n";
-        } else {
-            msg = data + "\n";
-        }
-        mOutputStream.write(msg.getBytes());
-        this.log("Send:" + data);
     }
 
 
