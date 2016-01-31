@@ -31,17 +31,25 @@ public class GlobalState {
         this.handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                String text = msg.obj.toString();
+                final String text = msg.obj.toString();
                 //Log to main activity
                 consoleLogger.log(text);
 
                 //Log to gdrive
                 if (isGdriveInitialized) {
-                    try {
-                        driveUtilities.appendToLogFile(text);
-                    } catch (Exception ex) {
-                        consoleLogger.log("ERROR: Writing log to GDrive failed - " + ex.toString());
-                    }
+
+                    Thread backgroundLoggerThread = new Thread(new Runnable() {
+                        public void run() {
+                            try {
+                                driveUtilities.appendToLogFile(text);
+                            } catch (Exception ex) {
+                                consoleLogger.log("ERROR: Writing log to GDrive failed - " + ex.toString());
+                            }
+                        }
+                    });
+                    backgroundLoggerThread.start();
+
+
                 }
                 super.handleMessage(msg);
             }

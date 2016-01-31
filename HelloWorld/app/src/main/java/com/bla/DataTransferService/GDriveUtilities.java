@@ -115,7 +115,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-    public void appendToLogFile(String data) throws Exception {
+    public synchronized void appendToLogFile(String data) throws Exception {
         if (mLogFile == null) {
             throw new Exception("Log file does not exist");
         }
@@ -123,56 +123,50 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
         String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
         final String text = "\n" + now.toString() + "  " + data;
-        mLogFile.open(mGoogleApiClient, DriveFile.MODE_READ_WRITE, null)
-                .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
-                                       @Override
-                                       public void onResult(DriveApi.DriveContentsResult result) {
-                                           if (!result.getStatus().isSuccess()) {
-                                               log("Cannot open log file for editing");
-                                               return;
-                                           }
-                                           DriveContents driveContents = result.getDriveContents();
+        DriveApi.DriveContentsResult result = mLogFile.open(mGoogleApiClient, DriveFile.MODE_READ_WRITE, null).await();
 
-                                           try {
-                                               ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
 
-                                               //For debugging - read content of log file
+        if (!result.getStatus().isSuccess()) {
+            log("Cannot open log file for editing");
+            return;
+        }
+        DriveContents driveContents = result.getDriveContents();
+
+        try {
+            ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+
+            //For debugging - read content of log file
 //                                               FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
 //                                               byte[] fileContent = new byte[fileInputStream.available()];
 //                                               fileInputStream.read(fileContent);
 //                                               String str = new String(fileContent, "UTF-8");
 
 
-                                               FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
+            FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 
-                                               //Jump to end of file
-                                               FileChannel channel = fileOutputStream.getChannel();
-                                               long size = channel.size();
-                                               channel.position(size);
+            //Jump to end of file
+            FileChannel channel = fileOutputStream.getChannel();
+            long size = channel.size();
 
-                                               Writer writer = new OutputStreamWriter(fileOutputStream);
-                                               writer.write(text);
-                                               writer.flush();
-                                               writer.close();
-                                           } catch (IOException e) {
-                                               log("Error writing to logfile in Gdrive: " + e.toString());
-                                           }
+            System.out.println("XXXXXX" + size + "____" + text);
+            channel.position(size);
 
-                                           driveContents.commit(mGoogleApiClient, null).setResultCallback(new ResultCallback<Status>() {
-                                               @Override
-                                               public void onResult(Status result) {
-                                                   if (!result.getStatus().isSuccess()) {
-                                                       log("Cannot commit changes to log file");
-                                                       return;
-                                                   } else {
-                                                       return;
-                                                   }
-                                               }
-                                           });
+            Writer writer = new OutputStreamWriter(fileOutputStream);
+            writer.write(text);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            log("Error writing to logfile in Gdrive: " + e.toString());
+        }
 
-                                       }
-                                   }
-                );
+        Status status = driveContents.commit(mGoogleApiClient, null).await();
+        if (!status.getStatus().isSuccess()) {
+            log("Cannot commit changes to log file");
+            return;
+        } else {
+            return;
+        }
+
     }
 
 
@@ -358,10 +352,10 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                                                public void onResult(Status result) {
 
                                                    if (!result.getStatus().isSuccess()) {
-                                                       log("Cannot commit changes to data file '" + fileName + "'" );
+                                                       log("Cannot commit changes to data file '" + fileName + "'");
                                                        return;
                                                    } else {
-                                                       log("Successfully written to GDrive data file '" + fileName + "'" );
+                                                       log("Successfully written to GDrive data file '" + fileName + "'");
                                                        return;
                                                    }
                                                }
