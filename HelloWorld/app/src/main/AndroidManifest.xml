@@ -36,5 +36,13 @@
         <meta-data
             android:name="com.bla.DataTransferService"
             android:value="id=AIzaSyC7UFV7kn2htkn7UTR_weqYsbY6cs1M4Q8" />
+
+        <receiver android:name="com.bla.DataTransferService.PlugInControlReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 </manifest>
