@@ -53,7 +53,22 @@ public class GlobalState {
     private static GlobalState instance;
 
 
-    public void startEverything(){
+    public void startEverything() {
+
+
+        //Write test data
+        if (mGDriveWriterThread != null) {
+            log("Already started - writing test data instead.... To be removed from productive code");
+            String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
+            try {
+                GlobalState.getInstance().mMessageQueue.put("Test content for GDrive" + now + "\n");
+            } catch (InterruptedException ex) {
+                log("Upps - error writing test data");
+            }
+            return;
+        }
+
+
         log("Starting Aqua " + version);
         log("Connecting to GDrive...");
         GlobalState.getInstance().driveUtilities.connect();
@@ -70,13 +85,13 @@ public class GlobalState {
     public void setActivity(Activity activity, ILogger logger) throws Exception {
         this.consoleLogger = logger;
         this.activity = activity;
-        if(settings != null){
+        if (settings != null) {
             settings.destroy();
         }
-        if(driveUtilities != null){
+        if (driveUtilities != null) {
             driveUtilities.destroy();
         }
-        if(bluetoothUtilities != null){
+        if (bluetoothUtilities != null) {
             bluetoothUtilities.destroy();
         }
         this.settings = new Settings(activity);
@@ -87,15 +102,15 @@ public class GlobalState {
             public void handle() {
                 isGdriveInitialized = true;
 
-                 if (!startUpFailed) {
-                     log("Opening bluetooth...");
-                     bluetoothUtilities.establishConnection();  //Gdrive is initialized, start initializing bluetooth
-                     if (!startUpFailed) {
-                         log("Done opening bluetooth connection");
-                         log("Connection bluetooth and google drive");
-                         connectGDriveAndBluetooth();
-                     }
-                 }
+                if (!startUpFailed) {
+                    log("Opening bluetooth...");
+                    bluetoothUtilities.establishConnection();  //Gdrive is initialized, start initializing bluetooth
+                    if (!startUpFailed) {
+                        log("Done opening bluetooth connection");
+                        log("Connection bluetooth and google drive");
+                        connectGDriveAndBluetooth();
+                    }
+                }
             }
         });
     }
@@ -131,13 +146,13 @@ public class GlobalState {
 
 
     public void handleOnMainActivityResult(final int requestCode, final int resultCode) {
-        if (this.driveUtilities != null){
+        if (this.driveUtilities != null) {
             this.driveUtilities.handleOnMainActivityResult(requestCode, resultCode);
         }
     }
 
 
-    public void setStartUpTpFailure(){
+    public void setStartUpTpFailure() {
         this.startUpFailed = true;
     }
 

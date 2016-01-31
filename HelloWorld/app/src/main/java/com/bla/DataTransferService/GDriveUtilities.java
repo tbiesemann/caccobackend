@@ -79,7 +79,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-
     private void log(String text) {
         GlobalState.getInstance().log(text);
     }
@@ -179,7 +178,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
     public void appendToFile(String monthlyDataFileName, String dailyDataFileName, String data) {
 
-        if (mCurrentFile == null){
+        if (mCurrentFile == null) {
             mTextNotYetAppendedToMonthlyDataFile = data;
             mTextNotYetAppendedToDailyDataFile = data;
             mCurrentFile = new CurrentDataFile(monthlyDataFileName, dailyDataFileName, null, null);
@@ -189,23 +188,22 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         }
 
         //Append to monthly file
-        if( mCurrentFile.monthlyFileName == monthlyDataFileName && mCurrentFile.monthlyFile != null) {
-            this.appendToFile(mCurrentFile.monthlyFile, data);
+        if (mCurrentFile.monthlyFileName == monthlyDataFileName && mCurrentFile.monthlyFile != null) {
+            this.appendToFile(mCurrentFile.monthlyFile, data, mCurrentFile.monthlyFileName);
         } else {
             mTextNotYetAppendedToMonthlyDataFile = data;
             mWorkingFolder.listChildren(this.mGoogleApiClient).setResultCallback(workingFolderChildrenRetrievedForMonthlyDataFilesCallback);
         }
 
         //Append to daily file
-        if( mCurrentFile.dailyFileName == dailyDataFileName && mCurrentFile.dailyFile != null) {
-            this.appendToFile(mCurrentFile.dailyFile, data);
+        if (mCurrentFile.dailyFileName == dailyDataFileName && mCurrentFile.dailyFile != null) {
+            this.appendToFile(mCurrentFile.dailyFile, data, mCurrentFile.dailyFileName);
         } else {
             mTextNotYetAppendedToDailyDataFile = data;
             mDailyReportsFolder.listChildren(this.mGoogleApiClient).setResultCallback(dailyReportsFolderChildrenRetrievedForDailyDataFilesCallback);
         }
 
     }
-
 
 
     ResultCallback<DriveApi.MetadataBufferResult> dailyReportsFolderChildrenRetrievedForDailyDataFilesCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -216,24 +214,26 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 return;
             }
             int length = result.getMetadataBuffer().getCount();
-            for (int i = 0; i < length; i++) {
-                Metadata metadata = result.getMetadataBuffer().get(i);
-                if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.dailyFileName)) {
-                    DriveId fileDriveId = metadata.getDriveId();
-                    mCurrentFile.dailyFile = fileDriveId.asDriveFile();
-                    log("Successfully found '" + mCurrentFile.dailyFileName + "' daily data file");
-                    continuePendingDailyFileAppendOperation();
-                    return;
+            try {
+                for (int i = 0; i < length; i++) {
+                    Metadata metadata = result.getMetadataBuffer().get(i);
+                    if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.dailyFileName)) {
+                        DriveId fileDriveId = metadata.getDriveId();
+                        mCurrentFile.dailyFile = fileDriveId.asDriveFile();
+                        log("Successfully found '" + mCurrentFile.dailyFileName + "' daily data file");
+                        continuePendingDailyFileAppendOperation();
+                        return;
+                    }
                 }
-            }
 
-            log("Daily file '" + mCurrentFile.dailyFileName + "' does not exist...Trying to create it");
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.dailyFileName).setMimeType("text/plain").build();
-            mWorkingFolder.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyDailyDataFileCallback);
+                log("Daily file '" + mCurrentFile.dailyFileName + "' does not exist...Trying to create it");
+                MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.dailyFileName).setMimeType("text/plain").build();
+                mDailyReportsFolder.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyDailyDataFileCallback);
+            } finally {
+                result.getMetadataBuffer().release();
+            }
         }
     };
-
-
 
 
     ResultCallback<DriveFolder.DriveFileResult> createEmptyDailyDataFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
@@ -254,11 +254,9 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         if (!mTextNotYetAppendedToDailyDataFile.isEmpty()) { //If there is a pending append
             String tmp = mTextNotYetAppendedToDailyDataFile;
             mTextNotYetAppendedToDailyDataFile = "";
-            appendToFile(mCurrentFile.dailyFile, tmp);
+            appendToFile(mCurrentFile.dailyFile, tmp, mCurrentFile.dailyFileName);
         }
     }
-
-
 
 
     ResultCallback<DriveApi.MetadataBufferResult> workingFolderChildrenRetrievedForMonthlyDataFilesCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
@@ -269,21 +267,25 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 return;
             }
             int length = result.getMetadataBuffer().getCount();
-            for (int i = 0; i < length; i++) {
-                Metadata metadata = result.getMetadataBuffer().get(i);
-                if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.monthlyFileName)) {
-                    DriveId fileDriveId = metadata.getDriveId();
-                    mCurrentFile.monthlyFile = fileDriveId.asDriveFile();
-                    log("Successfully found '" + mCurrentFile.monthlyFileName + "' monthly data file");
-                    continuePendingMonthlyFileAppendOperation();
-                    return;
+            try {
+                for (int i = 0; i < length; i++) {
+                    Metadata metadata = result.getMetadataBuffer().get(i);
+                    if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.monthlyFileName)) {
+                        DriveId fileDriveId = metadata.getDriveId();
+                        mCurrentFile.monthlyFile = fileDriveId.asDriveFile();
+                        log("Successfully found '" + mCurrentFile.monthlyFileName + "' monthly data file");
+                        continuePendingMonthlyFileAppendOperation();
+                        return;
+                    }
                 }
+
+                log("Monthly file '" + mCurrentFile.monthlyFileName + "' does not exist...Trying to create it");
+                MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.monthlyFileName).setMimeType("text/plain").build();
+                mWorkingFolder.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyMonthlyDataFileCallback);
+
+            } finally {
+                result.getMetadataBuffer().release();
             }
-
-            log("Monthly file '" + mCurrentFile.monthlyFileName + "' does not exist...Trying to create it");
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.monthlyFileName).setMimeType("text/plain").build();
-            mWorkingFolder.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyMonthlyDataFileCallback);
-
         }
     };
 
@@ -306,12 +308,12 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         if (!mTextNotYetAppendedToMonthlyDataFile.isEmpty()) { //If there is a pending append
             String tmp = mTextNotYetAppendedToMonthlyDataFile;
             mTextNotYetAppendedToMonthlyDataFile = "";
-            appendToFile(mCurrentFile.monthlyFile, tmp);
+            appendToFile(mCurrentFile.monthlyFile, tmp, mCurrentFile.monthlyFileName);
         }
     }
 
 
-    private void appendToFile(DriveFile file, String data) {
+    private void appendToFile(DriveFile file, String data, final String fileName) {
         final String text = data;
         if (file == null) {
             log("Programming Error: cannot append to file, it is null");
@@ -322,7 +324,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                                        @Override
                                        public void onResult(DriveApi.DriveContentsResult result) {
                                            if (!result.getStatus().isSuccess()) {
-                                               log("Cannot open data file for editing");
+                                               log("Cannot open data file '" + fileName + "' for editing");
                                                return;
                                            }
                                            DriveContents driveContents = result.getDriveContents();
@@ -348,17 +350,18 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                                                writer.flush();
                                                writer.close();
                                            } catch (IOException e) {
-                                               log("Error writing to data file in Gdrive: " + e.toString());
+                                               log("Error writing to data file '" + fileName + "' in Gdrive: " + e.toString());
                                            }
 
                                            driveContents.commit(mGoogleApiClient, null).setResultCallback(new ResultCallback<Status>() {
                                                @Override
                                                public void onResult(Status result) {
+
                                                    if (!result.getStatus().isSuccess()) {
-                                                       log("Cannot commit changes to data file");
+                                                       log("Cannot commit changes to data file '" + fileName + "'" );
                                                        return;
                                                    } else {
-                                                       log("Successfully written to GDrive data file");
+                                                       log("Successfully written to GDrive data file '" + fileName + "'" );
                                                        return;
                                                    }
                                                }
@@ -370,7 +373,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-    public void forceSync(){
+    public void forceSync() {
         log("Starting GDrive Synchronization");
         Drive.DriveApi.requestSync(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
             @Override
@@ -414,8 +417,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-
-
     public void initWorkingFolder() {
         mRootFolder = Drive.DriveApi.getRootFolder(this.mGoogleApiClient);
         mRootFolder.listChildren(this.mGoogleApiClient).setResultCallback(rootChildrenRetrievedCallback);
@@ -430,29 +431,32 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 return;
             }
             int length = result.getMetadataBuffer().getCount();
-            String locationName = GlobalState.getInstance().settings.getLocation();
-            for (int i = 0; i < length; i++) {
-                Metadata metadata = result.getMetadataBuffer().get(i);
-                if (metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(locationName)) {
-                    if (metadata.isTrashed()) {
-                        log(locationName + " folder is trashed...will be ignored");
-                    } else {
-                        DriveId workingFolderDriveId = metadata.getDriveId();
-                        mWorkingFolder = workingFolderDriveId.asDriveFolder();
-                        log("Successfully found '" + locationName + "' folder");
+            try {
+                String locationName = GlobalState.getInstance().settings.getLocation();
+                for (int i = 0; i < length; i++) {
+                    Metadata metadata = result.getMetadataBuffer().get(i);
+                    if (metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(locationName)) {
+                        if (metadata.isTrashed()) {
+                            log(locationName + " folder is trashed...will be ignored");
+                        } else {
+                            DriveId workingFolderDriveId = metadata.getDriveId();
+                            mWorkingFolder = workingFolderDriveId.asDriveFolder();
+                            log("Successfully found '" + locationName + "' folder");
 
-                        log("Looking for an existing log file and DailyReports folder...");
-                        mWorkingFolder.listChildren(mGoogleApiClient).setResultCallback(workingFolderChildrenRetrievedForLogFileCallback);
-                        return;
+                            log("Looking for an existing log file and DailyReports folder...");
+                            mWorkingFolder.listChildren(mGoogleApiClient).setResultCallback(workingFolderChildrenRetrievedForLogFileCallback);
+
+                            return;
+                        }
                     }
                 }
-            }
 
-            createWorkingFolder();
+                createWorkingFolder();
+            } finally {
+                result.getMetadataBuffer().release();
+            }
         }
     };
-
-
 
 
     private void createWorkingFolder() {
@@ -474,7 +478,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-
     private void createDailyReportsFolderAndCreateLogFile() {
         final String locationName = GlobalState.getInstance().settings.getLocation();
         log("Creating folder 'DailyReports'");
@@ -494,7 +497,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-
     private void createDailyReportsFolder(final boolean fireCompletedEvent) {
         final String locationName = GlobalState.getInstance().settings.getLocation();
         log("Creating folder 'DailyReports'");
@@ -508,14 +510,12 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 }
                 log("Folder 'DailyReports' created in GDrive");
                 mDailyReportsFolder = result.getDriveFolder();
-                if(fireCompletedEvent) {
+                if (fireCompletedEvent) {
                     executeInitializationCompletedEventHandler();
                 }
             }
         });
     }
-
-
 
 
     private void createEmptyLogfile(final boolean fireCompletedEvent) {
@@ -549,45 +549,48 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 return;
             }
             int length = result.getMetadataBuffer().getCount();
-            for (int i = 0; i < length; i++) {
-                Metadata metadata = result.getMetadataBuffer().get(i);
-                if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mLogFileName)) {
-                    DriveId fileDriveId = metadata.getDriveId();
-                    mLogFile = fileDriveId.asDriveFile();
-                    log("Successfully found " + mLogFileName);
-                    LogFileFound = true;
+            try {
+                for (int i = 0; i < length; i++) {
+                    Metadata metadata = result.getMetadataBuffer().get(i);
+                    if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mLogFileName)) {
+                        DriveId fileDriveId = metadata.getDriveId();
+                        mLogFile = fileDriveId.asDriveFile();
+                        log("Successfully found " + mLogFileName);
+                        LogFileFound = true;
+                    }
+
+                    if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("DailyReports")) {
+                        DriveId folderDriveId = metadata.getDriveId();
+                        mDailyReportsFolder = folderDriveId.asDriveFolder();
+                        log("Successfully found DailyReports folder");
+                        DailyReportsFolderFound = true;
+                    }
                 }
 
-                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("DailyReports")) {
-                    DriveId folderDriveId = metadata.getDriveId();
-                    mDailyReportsFolder = folderDriveId.asDriveFolder();
-                    log("Successfully found DailyReports folder");
-                    DailyReportsFolderFound = true;
+                if (DailyReportsFolderFound && LogFileFound) {
+                    executeInitializationCompletedEventHandler();
+                    return;
                 }
-            }
 
-            if (DailyReportsFolderFound && LogFileFound){
-                executeInitializationCompletedEventHandler();
-                return;
-            }
+                if (!DailyReportsFolderFound && !LogFileFound) {
+                    createDailyReportsFolderAndCreateLogFile();
+                    return;
+                }
 
-            if(!DailyReportsFolderFound && !LogFileFound){
-                createDailyReportsFolderAndCreateLogFile();
-                return;
-            }
+                if (DailyReportsFolderFound && !LogFileFound) {
+                    log("Log file " + mLogFileName + "' does not exist");
+                    createEmptyLogfile(true);
+                    return;
+                }
 
-            if(DailyReportsFolderFound && !LogFileFound){
-                log("Log file " + mLogFileName + "' does not exist");
-                createEmptyLogfile(true);
-                return;
+                if (!DailyReportsFolderFound && LogFileFound) {
+                    log("DailyReport folder does not exist");
+                    createDailyReportsFolder(true);
+                    return;
+                }
+            } finally {
+                result.getMetadataBuffer().release();
             }
-
-            if(!DailyReportsFolderFound && LogFileFound){
-                log("DailyReport folder does not exist");
-                createDailyReportsFolder(true);
-                return;
-            }
-
 
         }
     };
@@ -601,26 +604,30 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                 return;
             }
             int length = result.getMetadataBuffer().getCount();
-            for (int i = 0; i < length; i++) {
-                Metadata metadata = result.getMetadataBuffer().get(i);
+            try {
+                for (int i = 0; i < length; i++) {
+                    Metadata metadata = result.getMetadataBuffer().get(i);
 
 
-                if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("Aqua")) {
-                    if (metadata.isTrashed()) {
-                        log("Aqua folder is trashed...will be ignored");
-                    } else {
-                        DriveId mAquaDriveId = metadata.getDriveId();
-                        mAquaFolder = mAquaDriveId.asDriveFolder();
-                        log("Successfully found 'Aqua' folder");
-                        mAquaFolder.listChildren(mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
-                        return;
+                    if (metadata.isFolder() && metadata.getTitle() != null && metadata.getTitle().equals("Aqua")) {
+                        if (metadata.isTrashed()) {
+                            log("Aqua folder is trashed...will be ignored");
+                        } else {
+                            DriveId mAquaDriveId = metadata.getDriveId();
+                            mAquaFolder = mAquaDriveId.asDriveFolder();
+                            log("Successfully found 'Aqua' folder");
+                            mAquaFolder.listChildren(mGoogleApiClient).setResultCallback(aquaChildrenRetrievedCallback);
+                            return;
+                        }
                     }
                 }
-            }
 
-            log("Aqua folder does not exist...Trying to create it");
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle("Aqua").build();
-            mRootFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(AquaFolderCreatedCallback);
+                log("Aqua folder does not exist...Trying to create it");
+                MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle("Aqua").build();
+                mRootFolder.createFolder(mGoogleApiClient, changeSet).setResultCallback(AquaFolderCreatedCallback);
+            } finally {
+                result.getMetadataBuffer().release();
+            }
         }
     };
 
@@ -644,7 +651,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             mConnectionCompletedHandler.handle();
         }
     }
-
 
 
     public void handleOnMainActivityResult(final int requestCode, final int resultCode) {
