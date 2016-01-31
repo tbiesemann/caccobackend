@@ -77,6 +77,7 @@ public class BluetoothUtilities {
             mSocket.connect();
         } catch (IOException e) {
             this.log("Cannot establish connection - error ocurred " + e.toString());
+            GlobalState.getInstance().setStartUpTpFailure();
             return;
         }
 

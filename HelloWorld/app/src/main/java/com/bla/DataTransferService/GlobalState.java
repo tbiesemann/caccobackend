@@ -16,6 +16,7 @@ public class GlobalState {
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
     boolean isGdriveInitialized = false;
+    private boolean startUpFailed = false;
     public GDriveUtilities driveUtilities;
     private Activity activity;
     private Handler handler;
@@ -86,11 +87,15 @@ public class GlobalState {
             public void handle() {
                 isGdriveInitialized = true;
 
-                log("Opening bluetooth...");
-                bluetoothUtilities.establishConnection();  //Gdrive is initialized, start initializing bluetooth
-                log("Done opening bluetooth connection");
-                log("Connection bluetooth and google drive");
-                connectGDriveAndBluetooth();
+                 if (!startUpFailed) {
+                     log("Opening bluetooth...");
+                     bluetoothUtilities.establishConnection();  //Gdrive is initialized, start initializing bluetooth
+                     if (!startUpFailed) {
+                         log("Done opening bluetooth connection");
+                         log("Connection bluetooth and google drive");
+                         connectGDriveAndBluetooth();
+                     }
+                 }
             }
         });
     }
@@ -129,6 +134,11 @@ public class GlobalState {
         if (this.driveUtilities != null){
             this.driveUtilities.handleOnMainActivityResult(requestCode, resultCode);
         }
+    }
+
+
+    public void setStartUpTpFailure(){
+        this.startUpFailed = true;
     }
 
 
