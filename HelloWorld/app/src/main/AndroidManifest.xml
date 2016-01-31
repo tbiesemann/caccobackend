@@ -33,14 +33,8 @@
             android:name=".GeneralSettingsActivity"
             android:label="@string/title_activity_general_settings"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".FilesOnDeviceActivity"
-            android:label="@string/title_activity_files_on_device"
-            android:theme="@style/AppTheme.NoActionBar" />
-
         <meta-data
             android:name="com.bla.DataTransferService"
             android:value="id=AIzaSyC7UFV7kn2htkn7UTR_weqYsbY6cs1M4Q8" />
     </application>
-
 </manifest>
