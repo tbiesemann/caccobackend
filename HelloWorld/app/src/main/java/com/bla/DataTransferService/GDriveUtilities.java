@@ -298,13 +298,14 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
 
 
     public void forceSync(){
+        log("Starting GDrive Synchronization");
         Drive.DriveApi.requestSync(mGoogleApiClient).setResultCallback(new ResultCallback<Status>() {
             @Override
             public void onResult(Status result) {
                 if (!result.isSuccess()) {
-                    log("Force Synchronization failed");
+                    log("GDrive Force Synchronization failed");
                 } else {
-                    log("Force Synchronization finished");
+                    log("GDrive Force Synchronization finished");
                 }
             }
         });

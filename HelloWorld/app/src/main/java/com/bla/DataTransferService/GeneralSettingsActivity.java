@@ -10,6 +10,10 @@ import android.widget.EditText;
 
 public class GeneralSettingsActivity extends AppCompatActivity {
 
+    Button btnForceSync;
+    EditText txtLocationID;
+    Button btnSaveSettings;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -17,15 +21,12 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //Fill text boxes initially
-
-
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
         String locationID = settings.getString("locationID", "Regenbecken42");
-        EditText txtLocationID = (EditText) findViewById(R.id.txtLocationID);
+        txtLocationID = (EditText) findViewById(R.id.txtLocationID);
         txtLocationID.setText(locationID);
 
-        final Button btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
+        btnSaveSettings = (Button) findViewById(R.id.btnSaveSettings);
         btnSaveSettings.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);
@@ -34,6 +35,16 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                 editor.putString("locationID", locationID);
                 editor.commit();
                 btnSaveSettings.setText("Saved...");
+            }
+        });
+
+
+       btnForceSync = (Button) findViewById(R.id.btnForceGDriveSync);
+        this.btnForceSync.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (GlobalState.getInstance().driveUtilities != null) {
+                    GlobalState.getInstance().driveUtilities.forceSync();
+                }
             }
         });
     }

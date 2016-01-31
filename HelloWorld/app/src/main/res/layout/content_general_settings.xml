@@ -40,9 +40,19 @@
         android:layout_height="wrap_content"
         android:text="Save Settings"
         android:id="@+id/btnSaveSettings"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/textView6"
-        android:layout_toEndOf="@+id/textView6"
-        android:layout_marginBottom="110dp" />
+        android:layout_below="@+id/txtLocationID"
+        android:layout_alignLeft="@+id/txtLocationID"
+        android:layout_alignStart="@+id/txtLocationID" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Force GDrive Sync"
+        android:id="@+id/btnForceGDriveSync"
+        android:singleLine="true"
+        android:layout_below="@+id/txtLocationID"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="109dp" />
 
 </RelativeLayout>

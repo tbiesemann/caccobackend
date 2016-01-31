@@ -13,7 +13,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity implements ILogger {
 
     Button btnStart;
-    Button btnForceSync;
+
     TextView console;
 
     @Override
@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         setSupportActionBar(toolbar);
 
         this.btnStart = (Button) findViewById(R.id.btnStart);
-        this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
         this.console.setText(consoleText);
 
@@ -41,13 +40,7 @@ public class MainActivity extends AppCompatActivity implements ILogger {
             }
         });
 
-        this.btnForceSync.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if (GlobalState.getInstance().driveUtilities != null) {
-                    GlobalState.getInstance().driveUtilities.forceSync();
-                }
-            }
-        });
+
 
 
     }

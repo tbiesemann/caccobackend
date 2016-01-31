@@ -76,7 +76,7 @@ public class BluetoothUtilities {
             mSocket = device.createRfcommSocketToServiceRecord(uuid);
             mSocket.connect();
         } catch (IOException e) {
-            this.log("Cannot establish connection - error ocurred " + e.toString());
+            this.log("ERROR: Cannot establish bluetooth connection - " + e.toString());
             GlobalState.getInstance().setStartUpTpFailure();
             return;
         }
