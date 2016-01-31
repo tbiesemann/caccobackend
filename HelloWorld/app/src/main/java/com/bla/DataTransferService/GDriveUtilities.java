@@ -59,7 +59,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         void handle();
     }
 
-    ;
+
     IconnectCompletedEventHandler mConnectionCompletedHandler;
 
     public void registerConnectCompletedEventHandler(IconnectCompletedEventHandler handler) {
@@ -496,6 +496,25 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             mConnectionCompletedHandler.handle();
         }
     }
+
+
+
+    public void handleOnMainActivityResult(final int requestCode, final int resultCode) {
+        switch (requestCode) {
+            case GDriveUtilities.REQUEST_CODE_RESOLUTION:
+                if (resultCode == Activity.RESULT_OK) {
+                    log("Trying to connect after sign in");
+                    connect();
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    log("Sign in failed - cancelled");
+                } else {
+                    log("Sign in failed!");
+                }
+                break;
+        }
+    }
+
+
 }
 
 

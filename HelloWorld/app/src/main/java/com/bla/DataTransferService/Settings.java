@@ -28,4 +28,9 @@ public class Settings {
         return settings.getString("deviceName", "");
     }
 
+
+    public void destroy(){
+
+    }
+
 }

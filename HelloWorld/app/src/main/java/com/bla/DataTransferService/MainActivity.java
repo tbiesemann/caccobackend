@@ -1,7 +1,5 @@
 package com.bla.DataTransferService;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,8 +12,6 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements ILogger {
 
-    Button btnConnectGDrive;
-    Button btnOpenBluetoothConnection;
     Button btnStart;
     Button btnForceSync;
     TextView console;
@@ -27,8 +23,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        this.btnConnectGDrive = (Button) findViewById(R.id.btnConnectGDrive);
-        this.btnOpenBluetoothConnection = (Button) findViewById(R.id.btnOpenBluetoothConnection);
         this.btnStart = (Button) findViewById(R.id.btnStart);
         this.btnForceSync = (Button) findViewById(R.id.btnForceSync);
         this.console = (TextView) findViewById(R.id.txtConsole);
@@ -40,16 +34,10 @@ public class MainActivity extends AppCompatActivity implements ILogger {
             this.log("Something went really wrong: " + ex.toString());
         }
 
-        btnConnectGDrive.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                GlobalState.getInstance().log("Connecting to GDrive...");
-                GlobalState.getInstance().driveUtilities.connect();
-            }
-        });
 
         btnStart.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                GlobalState.getInstance().start();
+                GlobalState.getInstance().startEverything();
             }
         });
 
@@ -61,23 +49,9 @@ public class MainActivity extends AppCompatActivity implements ILogger {
             }
         });
 
-        this.btnOpenBluetoothConnection.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                GlobalState.getInstance().log("Opening bluetooth...");
-                openBluetoothConnection();
-                GlobalState.getInstance().log("Done opening bluetooth connection");
-            }
-        });
+
     }
 
-
-
-    private void openBluetoothConnection() {
-
-
-
-        GlobalState.getInstance().bluetoothUtilities.establishConnection();
-    }
 
 
     private static String consoleText = "";
@@ -120,18 +94,8 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        switch (requestCode) {
-            case GDriveUtilities.REQUEST_CODE_RESOLUTION:
-                if (resultCode == RESULT_OK) {
-                    GlobalState.getInstance().log("Trying to connect after sign in");
-                    GlobalState.getInstance().driveUtilities.connect();
-                } else if (resultCode == RESULT_CANCELED) {
-                    GlobalState.getInstance().log("Sign in failed - cancelled");
-                } else {
-                    GlobalState.getInstance().log("Sign in failed!");
-                }
-                break;
-        }
+        super.onActivityResult(requestCode, resultCode, data );
+        GlobalState.getInstance().handleOnMainActivityResult(requestCode, resultCode);
     }
 
 }
