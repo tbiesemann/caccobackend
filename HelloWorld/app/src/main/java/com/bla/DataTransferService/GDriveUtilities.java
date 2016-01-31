@@ -30,12 +30,15 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     final String mLogFileName = "log.txt";
     Activity mActivity;
     private GoogleApiClient mGoogleApiClient;
-    private CurrentFile mCurrentFile;
+    private CurrentDataFile mCurrentFile;
     private DriveFile mLogFile;
     DriveFolder mRootFolder;
     DriveFolder mAquaFolder;
     DriveFolder mWorkingFolder;
     DriveFolder mDailyReportsFolder;
+    String mTextNotYetAppendedToMonthlyDataFile;
+    String mTextNotYetAppendedToDailyDataFile;
+
 
     public static final int REQUEST_CODE_RESOLUTION = 42;
 
@@ -98,14 +101,18 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-    private class CurrentFile {
-        public CurrentFile(String fileName, DriveFile file) {
-            this.fileName = fileName;
-            this.file = file;
+    private class CurrentDataFile {
+        public CurrentDataFile(String monthlyFileName, String dailyFileName, DriveFile monthlyFile, DriveFile dailyFile) {
+            this.monthlyFileName = monthlyFileName;
+            this.dailyFileName = dailyFileName;
+            this.monthlyFile = monthlyFile;
+            this.dailyFile = dailyFile;
         }
 
-        public String fileName;
-        public DriveFile file;
+        public String monthlyFileName;
+        public String dailyFileName;
+        public DriveFile monthlyFile;
+        public DriveFile dailyFile;
     }
 
 
@@ -122,7 +129,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                                        @Override
                                        public void onResult(DriveApi.DriveContentsResult result) {
                                            if (!result.getStatus().isSuccess()) {
-                                               log("Cannot open log file for editing");
+                                               log("Cannot open log monthlyFile for editing");
                                                return;
                                            }
                                            DriveContents driveContents = result.getDriveContents();
@@ -170,21 +177,91 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-    public void appendToFile(String fileName, String data) {
+    public void appendToFile(String monthlyDataFileName, String dailyDataFileName, String data) {
 
-        if (mCurrentFile != null && mCurrentFile.fileName == fileName) {
-            this.appendToFile(mCurrentFile.file, data);
+        if (mCurrentFile == null){
+            mTextNotYetAppendedToMonthlyDataFile = data;
+            mTextNotYetAppendedToDailyDataFile = data;
+            mCurrentFile = new CurrentDataFile(monthlyDataFileName, dailyDataFileName, null, null);
+            mWorkingFolder.listChildren(this.mGoogleApiClient).setResultCallback(workingFolderChildrenRetrievedForMonthlyDataFilesCallback);
+            mDailyReportsFolder.listChildren(this.mGoogleApiClient).setResultCallback(dailyReportsFolderChildrenRetrievedForDailyDataFilesCallback);
+            return;
+        }
+
+        //Append to monthly file
+        if( mCurrentFile.monthlyFileName == monthlyDataFileName && mCurrentFile.monthlyFile != null) {
+            this.appendToFile(mCurrentFile.monthlyFile, data);
         } else {
-            mTextNotYetAppendedToDataFile = data;
-            mCurrentFile = new CurrentFile(fileName, null);
-            mWorkingFolder.listChildren(this.mGoogleApiClient).setResultCallback(workingFolderChildrenRetrievedForDataFileCallback);
+            mTextNotYetAppendedToMonthlyDataFile = data;
+            mWorkingFolder.listChildren(this.mGoogleApiClient).setResultCallback(workingFolderChildrenRetrievedForMonthlyDataFilesCallback);
+        }
+
+        //Append to daily file
+        if( mCurrentFile.dailyFileName == dailyDataFileName && mCurrentFile.dailyFile != null) {
+            this.appendToFile(mCurrentFile.dailyFile, data);
+        } else {
+            mTextNotYetAppendedToDailyDataFile = data;
+            mDailyReportsFolder.listChildren(this.mGoogleApiClient).setResultCallback(dailyReportsFolderChildrenRetrievedForDailyDataFilesCallback);
+        }
+
+    }
+
+
+
+    ResultCallback<DriveApi.MetadataBufferResult> dailyReportsFolderChildrenRetrievedForDailyDataFilesCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
+        @Override
+        public void onResult(DriveApi.MetadataBufferResult result) {
+            if (!result.getStatus().isSuccess()) {
+                log("Problem reading children of DailyReports folder");
+                return;
+            }
+            int length = result.getMetadataBuffer().getCount();
+            for (int i = 0; i < length; i++) {
+                Metadata metadata = result.getMetadataBuffer().get(i);
+                if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.dailyFileName)) {
+                    DriveId fileDriveId = metadata.getDriveId();
+                    mCurrentFile.dailyFile = fileDriveId.asDriveFile();
+                    log("Successfully found '" + mCurrentFile.dailyFileName + "' daily data file");
+                    continuePendingDailyFileAppendOperation();
+                    return;
+                }
+            }
+
+            log("Daily file '" + mCurrentFile.dailyFileName + "' does not exist...Trying to create it");
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.dailyFileName).setMimeType("text/plain").build();
+            mWorkingFolder.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyDailyDataFileCallback);
+        }
+    };
+
+
+
+
+    ResultCallback<DriveFolder.DriveFileResult> createEmptyDailyDataFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
+        @Override
+        public void onResult(DriveFolder.DriveFileResult result) {
+            if (!result.getStatus().isSuccess()) {
+                log("Problem creating empty daily file'" + mCurrentFile.dailyFileName + "'");
+                return;
+            } else {
+                log("File created '" + mCurrentFile.dailyFileName + "'");
+                mCurrentFile.dailyFile = result.getDriveFile();
+                continuePendingDailyFileAppendOperation();
+            }
+        }
+    };
+
+    private void continuePendingDailyFileAppendOperation() {
+        if (!mTextNotYetAppendedToDailyDataFile.isEmpty()) { //If there is a pending append
+            String tmp = mTextNotYetAppendedToDailyDataFile;
+            mTextNotYetAppendedToDailyDataFile = "";
+            appendToFile(mCurrentFile.dailyFile, tmp);
         }
     }
 
-    private String mTextNotYetAppendedToDataFile;
 
 
-    ResultCallback<DriveApi.MetadataBufferResult> workingFolderChildrenRetrievedForDataFileCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
+
+    ResultCallback<DriveApi.MetadataBufferResult> workingFolderChildrenRetrievedForMonthlyDataFilesCallback = new ResultCallback<DriveApi.MetadataBufferResult>() {
         @Override
         public void onResult(DriveApi.MetadataBufferResult result) {
             if (!result.getStatus().isSuccess()) {
@@ -194,44 +271,42 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             int length = result.getMetadataBuffer().getCount();
             for (int i = 0; i < length; i++) {
                 Metadata metadata = result.getMetadataBuffer().get(i);
-                if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.fileName)) {
+                if (!metadata.isFolder() && !metadata.isTrashed() && metadata.getTitle() != null && metadata.getTitle().equals(mCurrentFile.monthlyFileName)) {
                     DriveId fileDriveId = metadata.getDriveId();
-                    mCurrentFile.file = fileDriveId.asDriveFile();
-                    log("Successfully found " + mCurrentFile.fileName + " file");
-
-                    continuePendingAppendOperation();
+                    mCurrentFile.monthlyFile = fileDriveId.asDriveFile();
+                    log("Successfully found '" + mCurrentFile.monthlyFileName + "' monthly data file");
+                    continuePendingMonthlyFileAppendOperation();
                     return;
                 }
             }
 
-            log("File '" + mCurrentFile.fileName + "' does not exist...Trying to create it");
-
-            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.fileName).setMimeType("text/plain").build();
-            mWorkingFolder.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyDataFileCallback);
+            log("Monthly file '" + mCurrentFile.monthlyFileName + "' does not exist...Trying to create it");
+            MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(mCurrentFile.monthlyFileName).setMimeType("text/plain").build();
+            mWorkingFolder.createFile(mGoogleApiClient, changeSet, null).setResultCallback(createEmptyMonthlyDataFileCallback);
 
         }
     };
 
 
-    ResultCallback<DriveFolder.DriveFileResult> createEmptyDataFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
+    ResultCallback<DriveFolder.DriveFileResult> createEmptyMonthlyDataFileCallback = new ResultCallback<DriveFolder.DriveFileResult>() {
         @Override
         public void onResult(DriveFolder.DriveFileResult result) {
             if (!result.getStatus().isSuccess()) {
-                log("Problem creating empty file'" + mCurrentFile.fileName + "'");
+                log("Problem creating empty monthly file'" + mCurrentFile.monthlyFileName + "'");
                 return;
             } else {
-                log("File created'" + mCurrentFile.fileName + "'");
-
-                continuePendingAppendOperation();
+                log("File created '" + mCurrentFile.monthlyFileName + "'");
+                mCurrentFile.monthlyFile = result.getDriveFile();
+                continuePendingMonthlyFileAppendOperation();
             }
         }
     };
 
-    private void continuePendingAppendOperation() {
-        if (!mTextNotYetAppendedToDataFile.isEmpty()) { //If there is a pending append
-            String tmp = mTextNotYetAppendedToDataFile;
-            mTextNotYetAppendedToDataFile = "";
-            appendToFile(mCurrentFile.fileName, tmp);
+    private void continuePendingMonthlyFileAppendOperation() {
+        if (!mTextNotYetAppendedToMonthlyDataFile.isEmpty()) { //If there is a pending append
+            String tmp = mTextNotYetAppendedToMonthlyDataFile;
+            mTextNotYetAppendedToMonthlyDataFile = "";
+            appendToFile(mCurrentFile.monthlyFile, tmp);
         }
     }
 

@@ -18,9 +18,9 @@ public class GDriveRunnable implements Runnable {
 
             while (true) {
                 Thread.sleep(10);
-                String text = mQueue.take();
+                String text = mQueue.take(); //blocking call
                 System.out.println("Writing to gdrive:" + text);
-                this.mGDriveUtilities.appendToFile("data.txt", text);
+                this.mGDriveUtilities.appendToFile("data.txt", "daily.txt", text);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
