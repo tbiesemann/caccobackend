@@ -2,7 +2,6 @@ package com.bla.DataTransferService;
 
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 
 public class GDriveRunnable implements Runnable {
@@ -40,7 +39,7 @@ public class GDriveRunnable implements Runnable {
 
         String monthlyFileName = GlobalState.getInstance().settings.getLocation() + "_" + year + "_" + month + ".txt";
         String dailyFileName = GlobalState.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + ".txt";
-        this.mGDriveUtilities.appendToFile(monthlyFileName, dailyFileName, text);
+        this.mGDriveUtilities.appendToDataFile(monthlyFileName, dailyFileName, text);
 
     }
 
