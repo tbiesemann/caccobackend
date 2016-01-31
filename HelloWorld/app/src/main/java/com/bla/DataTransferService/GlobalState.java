@@ -2,7 +2,7 @@ package com.bla.DataTransferService;
 
 
 import android.app.Activity;
-import android.content.Intent;
+import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 
@@ -16,7 +16,6 @@ public class GlobalState {
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
     boolean isGdriveInitialized = false;
-    private boolean startUpFailed = false;
     public GDriveUtilities driveUtilities;
     private Activity activity;
     private Handler handler;
@@ -53,7 +52,7 @@ public class GlobalState {
     private static GlobalState instance;
 
 
-    public void startEverything() {
+    public void start() {
 
 
         //Write test data
@@ -101,18 +100,46 @@ public class GlobalState {
             @Override
             public void handle() {
                 isGdriveInitialized = true;
-
-                if (!startUpFailed) {
-                    log("Opening bluetooth...");
-                    bluetoothUtilities.establishConnection();  //Gdrive is initialized, start initializing bluetooth
-                    if (!startUpFailed) {
-                        log("Done opening bluetooth connection");
-                        log("Connection bluetooth and google drive");
-                        connectGDriveAndBluetooth();
-                    }
-                }
+                setupBluetoothAndLinkWithGdrive();
             }
         });
+    }
+
+
+    private void setupBluetoothAndLinkWithGdrive() {
+        setupBluetooth();
+    }
+
+    private void setupBluetooth() {
+        log("Opening bluetooth...");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                boolean success = bluetoothUtilities.establishConnection();
+                if (success) {
+                    onBluetoothSuccess();
+                } else {
+                    try {
+                        log("Waiting 20 seconds before retry");
+                        Thread.sleep(20000);
+                    } catch (InterruptedException ex) {
+                    }
+                    setupBluetooth();
+                }
+            }
+        }).start();
+    }
+
+    private void onBluetoothSuccess() {
+        log("Done opening bluetooth connection");
+        connectGDriveWithBluetooth();
+    }
+
+
+    public void onBluetoothDeviceDisconnected(BluetoothDevice device) {
+
     }
 
 
@@ -132,7 +159,8 @@ public class GlobalState {
     }
 
 
-    public void connectGDriveAndBluetooth() {
+    public void connectGDriveWithBluetooth() {
+        log("Connecting bluetooth with google drive..");
         if (mGDriveWriterThread != null) {
             log("Error: Worker thread is already started.....");
             return;
@@ -149,11 +177,6 @@ public class GlobalState {
         if (this.driveUtilities != null) {
             this.driveUtilities.handleOnMainActivityResult(requestCode, resultCode);
         }
-    }
-
-
-    public void setStartUpTpFailure() {
-        this.startUpFailed = true;
     }
 
 

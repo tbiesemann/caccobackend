@@ -20,7 +20,7 @@ public class BluetoothUtilities {
     private BluetoothSocket mSocket;
     private OutputStream mOutputStream;
     private InputStream mInputStream;
-
+    private BluetoothDevice mDevice;
     public BluetoothUtilities() {
     }
 
@@ -53,35 +53,31 @@ public class BluetoothUtilities {
     }
 
 
-    public void establishConnection() {
+    public boolean establishConnection() {
 
         //Make sure bluetooth is turned on
         enableBluetoothAdapter();
 
         String deviceName = GlobalState.getInstance().settings.getDeviceName();
-        BluetoothDevice device;
-        device = this.getDeviceByName(deviceName);
-        if (device == null) {
+
+        mDevice = this.getDeviceByName(deviceName);
+        if (mDevice == null) {
             this.log("Cannot find a device with name " + deviceName);
-            return;
+            return false;
         }
         this.log("Device " + deviceName + " found");
 
 
-        UUID uuid = this.getDeviceUUID(device);
+        UUID uuid = this.getDeviceUUID(mDevice);
 
 
         try {
-            this.log("Establishing connection with device " + device.getName() + " and address " + device.getAddress() + " and UUID " + uuid.toString());
-            mSocket = device.createRfcommSocketToServiceRecord(uuid);
+            this.log("Establishing connection with device " + mDevice.getName() + " and address " + mDevice.getAddress() + " and UUID " + uuid.toString());
+            mSocket = mDevice.createRfcommSocketToServiceRecord(uuid);
             mSocket.connect();
         } catch (IOException e) {
             this.log("ERROR: Cannot establish bluetooth connection - " + e.toString());
-
-            this.log("Startup should be cancelled - commented for testing purposes");
-            //GlobalState.getInstance().setStartUpTpFailure();
-
-            return;
+            return false;
         }
 
         this.log("Bluetooth connection is established");
@@ -91,9 +87,11 @@ public class BluetoothUtilities {
             mInputStream = mSocket.getInputStream();
         } catch (IOException e) {
             this.log("Error getting streams..." + e.toString());
+            return false;
         }
 
         beginListenForData();
+        return true;
     }
 
 
@@ -191,6 +189,8 @@ public class BluetoothUtilities {
             } catch (IOException ex) {
             }
         }
+
+        this.mDevice = null;
     }
 
 

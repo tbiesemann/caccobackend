@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
         btnStart.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                GlobalState.getInstance().startEverything();
+                GlobalState.getInstance().start();
             }
         });
 

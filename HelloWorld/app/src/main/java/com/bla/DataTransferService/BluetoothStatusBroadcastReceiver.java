@@ -9,6 +9,9 @@ import android.content.Intent;
 public class BluetoothStatusBroadcastReceiver extends BroadcastReceiver {
 
     public void onReceive(Context context, Intent intent) {
+        BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+
         String action = intent.getAction();
         GlobalState.getInstance().log("Bluetooth Intent Recieved:" + action);
 
@@ -18,6 +21,7 @@ public class BluetoothStatusBroadcastReceiver extends BroadcastReceiver {
 
         if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)){
             GlobalState.getInstance().log("A device was disconnected via bluetooth");
+            GlobalState.getInstance().onBluetoothDeviceDisconnected(device);
         }
     }
 }
