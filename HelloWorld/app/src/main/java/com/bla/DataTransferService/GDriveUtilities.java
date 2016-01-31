@@ -128,7 +128,7 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                                        @Override
                                        public void onResult(DriveApi.DriveContentsResult result) {
                                            if (!result.getStatus().isSuccess()) {
-                                               log("Cannot open log monthlyFile for editing");
+                                               log("Cannot open log file for editing");
                                                return;
                                            }
                                            DriveContents driveContents = result.getDriveContents();

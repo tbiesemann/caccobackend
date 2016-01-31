@@ -40,7 +40,7 @@ public class GlobalState {
                     try {
                         driveUtilities.appendToLogFile(text);
                     } catch (Exception ex) {
-
+                        consoleLogger.log("ERROR: Writing log to GDrive failed - " + ex.toString());
                     }
                 }
                 super.handleMessage(msg);
@@ -53,20 +53,6 @@ public class GlobalState {
 
 
     public void start() {
-
-
-        //Write test data
-        if (mGDriveWriterThread != null) {
-            log("Already started - writing test data instead.... To be removed from productive code");
-            String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
-            try {
-                GlobalState.getInstance().mMessageQueue.put("Test content for GDrive" + now + "\n");
-            } catch (InterruptedException ex) {
-                log("Upps - error writing test data");
-            }
-            return;
-        }
-
 
         log("Starting Aqua " + version);
         log("Connecting to GDrive...");

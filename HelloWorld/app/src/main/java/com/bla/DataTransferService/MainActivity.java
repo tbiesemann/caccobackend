@@ -12,8 +12,6 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements ILogger {
 
-    Button btnStart;
-
     TextView console;
 
     @Override
@@ -23,7 +21,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        this.btnStart = (Button) findViewById(R.id.btnStart);
         this.console = (TextView) findViewById(R.id.txtConsole);
         this.console.setText(consoleText);
 
@@ -33,15 +30,7 @@ public class MainActivity extends AppCompatActivity implements ILogger {
             this.log("Something went really wrong: " + ex.toString());
         }
 
-
-        btnStart.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                GlobalState.getInstance().start();
-            }
-        });
-
-
-
+        GlobalState.getInstance().start();
 
     }
 
