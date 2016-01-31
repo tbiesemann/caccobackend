@@ -100,15 +100,11 @@ public class GlobalState {
             @Override
             public void handle() {
                 isGdriveInitialized = true;
-                setupBluetoothAndLinkWithGdrive();
+                setupBluetooth();
             }
         });
     }
 
-
-    private void setupBluetoothAndLinkWithGdrive() {
-        setupBluetooth();
-    }
 
     private void setupBluetooth() {
         log("Opening bluetooth...");
@@ -139,7 +135,7 @@ public class GlobalState {
 
 
     public void onBluetoothDeviceDisconnected(BluetoothDevice device) {
-
+        setupBluetooth();
     }
 
 
