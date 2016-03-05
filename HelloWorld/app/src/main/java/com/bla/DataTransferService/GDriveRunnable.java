@@ -32,10 +32,15 @@ public class GDriveRunnable implements Runnable {
 
     private void writeDataToGDrive(String text) {
         Calendar c = Calendar.getInstance();
-        int year = c.get(Calendar.YEAR);
-        int month = c.get(Calendar.MONTH);
-        month++; //zero based
-        int day = c.get(Calendar.DAY_OF_MONTH);
+        String year = "" + (c.get(Calendar.YEAR));
+        String month = "" + (c.get(Calendar.MONTH) + 1);
+        if (c.get(Calendar.MONTH) < 10) {
+            month = "0" + month;
+        }
+        String day = "" + c.get(Calendar.DAY_OF_MONTH);
+        if (Calendar.DAY_OF_MONTH < 10) {
+            day = "0" + day;
+        }
 
         String monthlyFileName = GlobalState.getInstance().settings.getLocation() + "_" + year + "_" + month + ".txt";
         String dailyFileName = GlobalState.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + ".txt";

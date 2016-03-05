@@ -77,6 +77,18 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         GlobalState.getInstance().handleOnMainActivityResult(requestCode, resultCode);
     }
 
+
+    @Override
+    protected void onDestroy(){
+        this.log("Main Activity is getting destroyed - Make sure that orientation change is disabled in the Android settings!");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex){
+        }
+        super.onDestroy();
+    }
+
+
 }
 
 

@@ -113,10 +113,10 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
         final String text = "\n" + now.toString() + "  " + data;
 
-        appendToDataFile(mLogFile, mLogFileName, text);
+        appendDataToFile(mLogFile, mLogFileName, text);
     }
 
-    public synchronized void appendToDataFile(DriveFile file, String fileName, String data) throws Exception {
+    public synchronized void appendDataToFile(DriveFile file, String fileName, String data) throws Exception {
         if (file == null) {
             throw new Exception("File '" + fileName + "' does not exist");
         }
@@ -169,19 +169,19 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             mCurrentFile = new CurrentDataFile(monthlyDataFileName, dailyDataFileName, null, null);
         }
 
-        if (mCurrentFile.monthlyFileName != monthlyDataFileName || mCurrentFile.monthlyFile == null) {
+        if (monthlyDataFileName.equals(mCurrentFile.monthlyFileName) || mCurrentFile.monthlyFile == null) {
             mCurrentFile.monthlyFileName = monthlyDataFileName;
             mCurrentFile.monthlyFile = getOrCreateFile(mWorkingFolder, monthlyDataFileName);
         }
 
-        if (mCurrentFile.dailyFileName != dailyDataFileName || mCurrentFile.dailyFile == null) {
+        if (dailyDataFileName.equals(mCurrentFile.dailyFileName) || mCurrentFile.dailyFile == null) {
             mCurrentFile.dailyFileName = dailyDataFileName;
             mCurrentFile.dailyFile = getOrCreateFile(mDailyReportsFolder, dailyDataFileName);
         }
 
         try {
-            this.appendToDataFile(mCurrentFile.monthlyFile, mCurrentFile.monthlyFileName, data);
-            this.appendToDataFile(mCurrentFile.dailyFile, mCurrentFile.dailyFileName, data);
+            this.appendDataToFile(mCurrentFile.monthlyFile, mCurrentFile.monthlyFileName, data);
+            this.appendDataToFile(mCurrentFile.dailyFile, mCurrentFile.dailyFileName, data);
         } catch (Exception ex) {
             log("Error writing data files to GDrive");
         }
@@ -241,7 +241,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
                     if (metadata.isTrashed()) {
                         log(fileName + " file is trashed...will be ignored");
                     } else {
-                        DriveId fileId = metadata.getDriveId();
                         log("Successfully found '" + fileName + "' file");
                         return metadata.getDriveId().asDriveFile();
                     }
@@ -252,7 +251,6 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         }
 
         log("Creating file '" + fileName + "'");
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(fileName).build();
         return createFile(parentFolder, fileName);
     }
 

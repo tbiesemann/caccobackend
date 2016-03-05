@@ -89,6 +89,7 @@ public class GlobalState {
         }
         this.settings = new Settings(activity);
         this.bluetoothUtilities = new BluetoothUtilities();
+        this.isGdriveInitialized = false;
         this.driveUtilities = new GDriveUtilities(activity);
         this.driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IconnectCompletedEventHandler() {
             @Override

@@ -8,6 +8,7 @@ import android.os.Handler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -112,6 +113,9 @@ public class BluetoothUtilities {
                         if (bytesAvailable > 0) {
                             byte[] packetBytes = new byte[bytesAvailable];
                             mInputStream.read(packetBytes);
+
+                            log(convertBytesToString(packetBytes)); //for analysis of missing bytes
+
                             for (int i = 0; i < bytesAvailable; i++) {
                                 byte b = packetBytes[i];
                                 boolean useWindowsLineEndings = GlobalState.getInstance().settings.getUseWindowsLineEndings();
@@ -121,6 +125,7 @@ public class BluetoothUtilities {
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
+                                    log("Received incoming terminated data: " + data.length() + " bytes");
                                     GlobalState.getInstance().handleIncomingData(data);
                                 } else {
                                     readBuffer[readBufferPosition++] = b;
@@ -134,6 +139,17 @@ public class BluetoothUtilities {
             }
         });
         workerThread.start();
+    }
+
+
+    public String convertBytesToString(byte[] data){
+        String text = "";
+        try {
+            text = new String(data, "US-ASCII");
+        } catch (UnsupportedEncodingException ex){
+            log("Error converting to ascii");
+        }
+        return text;
     }
 
 
