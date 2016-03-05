@@ -169,12 +169,12 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             mCurrentFile = new CurrentDataFile(monthlyDataFileName, dailyDataFileName, null, null);
         }
 
-        if (monthlyDataFileName.equals(mCurrentFile.monthlyFileName) || mCurrentFile.monthlyFile == null) {
+        if (!monthlyDataFileName.equals(mCurrentFile.monthlyFileName) || mCurrentFile.monthlyFile == null) {
             mCurrentFile.monthlyFileName = monthlyDataFileName;
             mCurrentFile.monthlyFile = getOrCreateFile(mWorkingFolder, monthlyDataFileName);
         }
 
-        if (dailyDataFileName.equals(mCurrentFile.dailyFileName) || mCurrentFile.dailyFile == null) {
+        if (!dailyDataFileName.equals(mCurrentFile.dailyFileName) || mCurrentFile.dailyFile == null) {
             mCurrentFile.dailyFileName = dailyDataFileName;
             mCurrentFile.dailyFile = getOrCreateFile(mDailyReportsFolder, dailyDataFileName);
         }
