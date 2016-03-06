@@ -7,6 +7,8 @@ import android.os.ParcelFileDescriptor;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
@@ -14,9 +16,12 @@ import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
+import com.google.android.gms.drive.DrivePreferencesApi;
+import com.google.android.gms.drive.FileUploadPreferences;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,6 +54,35 @@ public class GDriveUtilities {
                 .addApi(Drive.API)
                 .addScope(Drive.SCOPE_FILE)
                 .build();
+
+
+        this.checkDrivePreferences();
+
+    }
+
+
+    private void checkDrivePreferences(){
+        Drive.DrivePreferencesApi.getFileUploadPreferences(mGoogleApiClient).setResultCallback(new ResultCallback<DrivePreferencesApi.FileUploadPreferencesResult>() {
+            @Override
+            public void onResult(DrivePreferencesApi.FileUploadPreferencesResult result) {
+                FileUploadPreferences prefs = result.getFileUploadPreferences();
+                int battery = prefs.getBatteryUsagePreference();
+                if(battery != FileUploadPreferences.BATTERY_USAGE_UNRESTRICTED){
+                    prefs.setBatteryUsagePreference(FileUploadPreferences.BATTERY_USAGE_UNRESTRICTED);
+                }
+                int networkType = prefs.getNetworkTypePreference();
+                if(networkType!= FileUploadPreferences.NETWORK_TYPE_ANY){
+                    prefs.setNetworkTypePreference(FileUploadPreferences.NETWORK_TYPE_ANY);
+                }
+                boolean roaming = prefs.isRoamingAllowed();
+                if (roaming != true) {
+                    prefs.setRoamingAllowed(true);
+                }
+            }
+        });
+
+
+
     }
 
     public interface IGDriveConnectCompletedEventHandler {

@@ -9,12 +9,14 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 
+import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class AquaService extends Service {
 
+    public Date mServiceCreationDate;
     public String version = "v0.2";
     public BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
@@ -32,6 +34,7 @@ public class AquaService extends Service {
 
 
     public AquaService() {
+        mServiceCreationDate = new Date();
         instance = this;
         this.mMessageQueue = new LinkedBlockingQueue<String>();
 
@@ -112,7 +115,8 @@ public class AquaService extends Service {
     public void setActivity(Activity activity, ILogger logger) throws Exception {
         this.consoleLogger = logger;
 
-        log("Starting Aqua Service " + version);
+        log("Aqua Service was created " + mServiceCreationDate.toString());
+        log("(Re)Starting Aqua Service " + version);
 
         this.activity = activity;
         if (settings != null) {
