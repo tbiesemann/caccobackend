@@ -13,15 +13,15 @@ public class BluetoothStatusBroadcastReceiver extends BroadcastReceiver {
 
 
         String action = intent.getAction();
-        GlobalState.getInstance().log("Bluetooth Intent Recieved:" + action);
+        AquaService.getInstance().log("Bluetooth Intent Received:" + action);
 
         if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)){
-            GlobalState.getInstance().log("A device was connected via bluetooth");
+            AquaService.getInstance().log("A device was connected via bluetooth");
         }
 
         if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)){
-            GlobalState.getInstance().log("A device was disconnected via bluetooth");
-            GlobalState.getInstance().onBluetoothDeviceDisconnected(device);
+            AquaService.getInstance().log("A device was disconnected via bluetooth");
+            AquaService.getInstance().onBluetoothDeviceDisconnected(device);
         }
     }
 }

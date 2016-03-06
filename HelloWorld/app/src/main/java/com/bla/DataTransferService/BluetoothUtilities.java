@@ -23,11 +23,12 @@ public class BluetoothUtilities {
     private InputStream mInputStream;
     private BluetoothDevice mDevice;
     public BluetoothUtilities() {
+        this.log("Creating bluetooth utilities");
     }
 
 
     private void log(String text) {
-        GlobalState.getInstance().log(text);
+        AquaService.getInstance().log(text);
     }
 
 
@@ -59,7 +60,7 @@ public class BluetoothUtilities {
         //Make sure bluetooth is turned on
         enableBluetoothAdapter();
 
-        String deviceName = GlobalState.getInstance().settings.getDeviceName();
+        String deviceName = AquaService.getInstance().settings.getDeviceName();
 
         mDevice = this.getDeviceByName(deviceName);
         if (mDevice == null) {
@@ -81,8 +82,6 @@ public class BluetoothUtilities {
             return false;
         }
 
-        this.log("Bluetooth connection is established");
-
         try {
             mOutputStream = mSocket.getOutputStream();
             mInputStream = mSocket.getInputStream();
@@ -90,6 +89,8 @@ public class BluetoothUtilities {
             this.log("Error getting streams..." + e.toString());
             return false;
         }
+
+        this.log("Bluetooth connection is established");
 
         beginListenForData();
         return true;
@@ -114,19 +115,19 @@ public class BluetoothUtilities {
                             byte[] packetBytes = new byte[bytesAvailable];
                             mInputStream.read(packetBytes);
 
-                            log(convertBytesToString(packetBytes)); //for analysis of missing bytes
+                            //log(convertBytesToString(packetBytes)); //for analysis of missing bytes
 
                             for (int i = 0; i < bytesAvailable; i++) {
                                 byte b = packetBytes[i];
-                                boolean useWindowsLineEndings = GlobalState.getInstance().settings.getUseWindowsLineEndings();
+                                boolean useWindowsLineEndings = AquaService.getInstance().settings.getUseWindowsLineEndings();
 
                                 if (((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10))) {
                                     byte[] encodedBytes = new byte[readBufferPosition];
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
-                                    log("Received incoming terminated data: " + data.length() + " bytes");
-                                    GlobalState.getInstance().handleIncomingData(data);
+                                    log("Received data from Bluetooth: " + data.length() + " bytes");
+                                    AquaService.getInstance().handleIncomingData(data);
                                 } else {
                                     readBuffer[readBufferPosition++] = b;
                                 }

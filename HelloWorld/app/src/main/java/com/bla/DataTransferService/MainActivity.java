@@ -1,48 +1,85 @@
 package com.bla.DataTransferService;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
-import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements ILogger {
 
     TextView console;
 
+    private MainActivity mainActivityInstance;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mainActivityInstance = this;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         this.console = (TextView) findViewById(R.id.txtConsole);
         this.console.setText(consoleText);
 
+        //Start Aqua service
         try {
-            GlobalState.getInstance().setActivity(this, this);
+            Intent intent = new Intent(this, AquaService.class);
+            this.startService(intent);
         } catch (Exception ex) {
             this.log("Something went really wrong: " + ex.toString());
         }
-
-        GlobalState.getInstance().start();
-
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to Aqua Service
+        Intent intent = new Intent(this, AquaService.class);
+        this.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    AquaService mService;
+    boolean mServiceBound = false;
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            AquaService.AquaServiceBinder binder = (AquaService.AquaServiceBinder) service;
+            mService = binder.getService();
+            mServiceBound = true;
+            try {
+                mService.setActivity(mainActivityInstance, mainActivityInstance);
+            } catch (Exception ex) {
+                log("Something went really wrong: " + ex.toString());
+            }
+
+            mService.startInitialization();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mServiceBound = false;
+        }
+    };
 
 
     private static String consoleText = "";
+
     public void log(String text) {
         int maxConsoleLength = 4000;
 
         int length = consoleText.length();
         if (length > maxConsoleLength) {
-            consoleText = consoleText.substring(0 , maxConsoleLength);
+            consoleText = consoleText.substring(0, maxConsoleLength);
         }
         consoleText = text + "\n" + consoleText;
         console.setText(consoleText);
@@ -73,17 +110,17 @@ public class MainActivity extends AppCompatActivity implements ILogger {
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        super.onActivityResult(requestCode, resultCode, data );
-        GlobalState.getInstance().handleOnMainActivityResult(requestCode, resultCode);
+        super.onActivityResult(requestCode, resultCode, data);
+        mService.handleOnMainActivityResult(requestCode, resultCode);
     }
 
 
     @Override
-    protected void onDestroy(){
+    protected void onDestroy() {
         this.log("Main Activity is getting destroyed - Make sure that orientation change is disabled in the Android settings!");
         try {
             Thread.sleep(5000);
-        } catch (InterruptedException ex){
+        } catch (InterruptedException ex) {
         }
         super.onDestroy();
     }

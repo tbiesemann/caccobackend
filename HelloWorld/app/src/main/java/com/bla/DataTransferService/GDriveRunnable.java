@@ -20,10 +20,11 @@ public class GDriveRunnable implements Runnable {
             while (true) {
                 Thread.sleep(10);
                 String text = mQueue.take(); //blocking call
-                System.out.println("Writing to gdrive:" + text);
+                AquaService.getInstance().logToUIOnly("Writing " + text.length() + " bytes to gdrive:" + text);
                 writeDataToGDrive(text);
             }
         } catch (InterruptedException e) {
+            AquaService.getInstance().log("Writing to GDrive crashed - no error resolution implemented yet");
             e.printStackTrace();
         }
     }
@@ -40,8 +41,8 @@ public class GDriveRunnable implements Runnable {
             day = "0" + day;
         }
 
-        String monthlyFileName = GlobalState.getInstance().settings.getLocation() + "_" + year + "_" + month + ".txt";
-        String dailyFileName = GlobalState.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + ".txt";
+        String monthlyFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + ".txt";
+        String dailyFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + ".txt";
         this.mGDriveUtilities.appendToDataFile(monthlyFileName, dailyFileName, text);
     }
 }

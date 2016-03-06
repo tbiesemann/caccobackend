@@ -3,7 +3,6 @@ package com.bla.DataTransferService;
 
 import android.app.Activity;
 import android.content.IntentSender;
-import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -52,13 +51,13 @@ public class GDriveUtilities {
 
     }
 
-    public interface IconnectCompletedEventHandler {
+    public interface IGDriveConnectCompletedEventHandler {
         void handle();
     }
 
-    IconnectCompletedEventHandler mConnectionCompletedHandler;
+    IGDriveConnectCompletedEventHandler mConnectionCompletedHandler;
 
-    public void registerConnectCompletedEventHandler(IconnectCompletedEventHandler handler) {
+    public void registerConnectCompletedEventHandler(IGDriveConnectCompletedEventHandler handler) {
         mConnectionCompletedHandler = handler;
     }
 
@@ -98,24 +97,8 @@ public class GDriveUtilities {
 
 
     private void log(String text) {
-        GlobalState.getInstance().log(text);
+        AquaService.getInstance().log(text);
     }
-
-
-//    @Override
-//    public void onConnectionFailed(ConnectionResult connectionResult) {
-//        if (connectionResult.hasResolution()) {
-//            try {
-//                this.log("Info: Connection failed, user needs to sign in...");
-//                connectionResult.startResolutionForResult(this.mActivity, REQUEST_CODE_RESOLUTION);
-//            } catch (IntentSender.SendIntentException e) {
-//                // Unable to resolve, message user appropriately
-//                this.log("Error: Something with GDrive went wrong.....");
-//            }
-//        } else {
-//            this.log("Error: Cannot connect to GDrive and no error resolution possible");
-//        }
-//    }
 
 
     private class CurrentDataFile {
@@ -330,7 +313,7 @@ public class GDriveUtilities {
     public void initWorkingFolder() {
         mRootFolder = Drive.DriveApi.getRootFolder(this.mGoogleApiClient);
         mAquaFolder = getOrCreateFolder(mRootFolder, "Aqua");
-        String locationName = GlobalState.getInstance().settings.getLocation();
+        String locationName = AquaService.getInstance().settings.getLocation();
         mWorkingFolder = getOrCreateFolder(mAquaFolder, locationName);
         mDailyReportsFolder = getOrCreateFolder(mWorkingFolder, "DailyReports");
         mLogFile = getOrCreateFile(mWorkingFolder, mLogFileName);

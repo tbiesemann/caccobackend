@@ -10,11 +10,11 @@ public class PlugInControlReceiver extends BroadcastReceiver {
         String action = intent.getAction();
 
         if(action.equals(Intent.ACTION_POWER_CONNECTED)) {
-            GlobalState.getInstance().log("Warning: power is connected again");
+            AquaService.getInstance().log("Warning: power is connected again");
 
         }
         else if(action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
-            GlobalState.getInstance().log("Warning: power was disconnected");
+            AquaService.getInstance().log("Warning: power was disconnected");
         }
     }
 }

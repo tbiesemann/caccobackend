@@ -10,7 +10,6 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@drawable/aqua"
@@ -40,8 +39,6 @@
             android:name="com.bla.DataTransferService"
             android:value="id=AIzaSyC7UFV7kn2htkn7UTR_weqYsbY6cs1M4Q8" />
 
-
-
         <receiver
             android:name=".BootCompletedBroadcastReceiver"
             android:label="StartMyServiceAtBootReceiver">
@@ -64,7 +61,10 @@
             </intent-filter>
         </receiver>
 
-
+        <service
+            android:name=".AquaService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

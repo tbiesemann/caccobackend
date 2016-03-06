@@ -60,7 +60,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
         btnShowPairedDevices.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                List<String> devices =  GlobalState.getInstance().bluetoothUtilities.getPairedDevicesAsString();
+                List<String> devices =  AquaService.getInstance().bluetoothUtilities.getPairedDevicesAsString();
                 for (String device : devices) {
                     log(device);
                 }

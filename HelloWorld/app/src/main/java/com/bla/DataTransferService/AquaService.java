@@ -1,5 +1,9 @@
 package com.bla.DataTransferService;
 
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
@@ -8,7 +12,8 @@ import android.os.Message;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class GlobalState {
+
+public class AquaService extends Service {
 
     public String version = "v0.2";
     public BlockingQueue<String> mMessageQueue;
@@ -17,15 +22,25 @@ public class GlobalState {
     boolean isGdriveInitialized = false;
     public GDriveUtilities driveUtilities;
     private Activity activity;
-    private Handler handler;
+    private Handler handlerForLoggerInUIAndGDrive;
+    private Handler handlerForUIOnly;
     private ILogger consoleLogger;
     private Thread mGDriveWriterThread;
 
-    public GlobalState() {
+    private final IBinder mBinder = new AquaServiceBinder();
 
+
+    public AquaService() {
+        instance = this;
         this.mMessageQueue = new LinkedBlockingQueue<String>();
 
-        this.handler = new Handler() {
+        initializeGDriveAndUILogger();
+        initializeUIOnlyLogger();
+    }
+
+
+    private void initializeGDriveAndUILogger() {
+        this.handlerForLoggerInUIAndGDrive = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 final String text = msg.obj.toString();
@@ -51,21 +66,61 @@ public class GlobalState {
     }
 
 
-    private static GlobalState instance;
-
-
-    public void start() {
-        log("Starting Aqua " + version);
-        log("Connecting to GDrive...");
-        GlobalState.getInstance().driveUtilities.connect();
+    private void initializeUIOnlyLogger() {
+        this.handlerForUIOnly = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                final String text = msg.obj.toString();
+                //Log to main activity
+                consoleLogger.log(text);
+                super.handleMessage(msg);
+            }
+        };
     }
 
-    static public GlobalState getInstance() {
-        if (instance == null) {
-            instance = new GlobalState();
+    public class AquaServiceBinder extends Binder {
+        AquaService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return AquaService.this;
         }
+    }
+
+    private static AquaService instance;
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // We want this service to continue running until it is explicitly
+        // stopped, so return sticky.
+        return START_STICKY;
+    }
+
+
+    private boolean mIsGDriveConnected = false;
+    public void startInitialization() {
+        if(mIsGDriveConnected) {
+            log("Aqua Service is already initialized");
+        } else {
+            mIsGDriveConnected = true;
+            log("Starting Aqua Service " + version);
+            log("Connecting to GDrive...");
+            this.driveUtilities.connect();
+        }
+    }
+
+
+
+    static public AquaService getInstance() {
+//        if (instance == null) {
+//            instance = new AquaService();  //TODO: Does this work ??
+//        }
         return instance;
     }
+
 
 
     public void setActivity(Activity activity, ILogger logger) throws Exception {
@@ -84,7 +139,7 @@ public class GlobalState {
         this.bluetoothUtilities = new BluetoothUtilities();
         this.isGdriveInitialized = false;
         this.driveUtilities = new GDriveUtilities(activity);
-        this.driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IconnectCompletedEventHandler() {
+        this.driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IGDriveConnectCompletedEventHandler() {
             @Override
             public void handle() {
                 isGdriveInitialized = true;
@@ -103,11 +158,11 @@ public class GlobalState {
 
                 boolean success = bluetoothUtilities.establishConnection();
                 if (success) {
-                    onBluetoothSuccess();
+                    connectGDriveWithBluetooth();
                 } else {
                     try {
-                        log("Waiting 20 seconds before retry");
-                        Thread.sleep(20000);
+                        log("Waiting 40 seconds before retry");
+                        Thread.sleep(40000);
                     } catch (InterruptedException ex) {
                     }
                     setupBluetooth();
@@ -116,10 +171,6 @@ public class GlobalState {
         }).start();
     }
 
-    private void onBluetoothSuccess() {
-        log("Done opening bluetooth connection");
-        connectGDriveWithBluetooth();
-    }
 
 
     public void onBluetoothDeviceDisconnected(BluetoothDevice device) {
@@ -130,7 +181,13 @@ public class GlobalState {
     public void log(String text) { //Can be called from any Thread
         Message msg = Message.obtain();
         msg.obj = text;
-        this.handler.sendMessage(msg);
+        this.handlerForLoggerInUIAndGDrive.sendMessage(msg);
+    }
+
+    public void logToUIOnly(String text) { //Can be called from any Thread
+        Message msg = Message.obtain();
+        msg.obj = text;
+        this.handlerForUIOnly.sendMessage(msg);
     }
 
 
@@ -146,7 +203,7 @@ public class GlobalState {
     public void connectGDriveWithBluetooth() {
         log("Connecting bluetooth with google drive..");
         if (mGDriveWriterThread != null) {
-            log("Error: Worker thread is already started.....");
+            log("GDriveRunnable thread is already started.....");
             return;
         } else {
             GDriveRunnable gDriveRunnable = new GDriveRunnable(driveUtilities, mMessageQueue);
@@ -162,6 +219,5 @@ public class GlobalState {
             this.driveUtilities.handleOnMainActivityResult(requestCode, resultCode);
         }
     }
-
 
 }
