@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
@@ -23,7 +24,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
 
-public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class GDriveUtilities {
 
     final String mLogFileName = "log.txt";
     Activity mActivity;
@@ -47,15 +48,13 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         mGoogleApiClient = new GoogleApiClient.Builder(this.mActivity)
                 .addApi(Drive.API)
                 .addScope(Drive.SCOPE_FILE)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
                 .build();
+
     }
 
     public interface IconnectCompletedEventHandler {
         void handle();
     }
-
 
     IconnectCompletedEventHandler mConnectionCompletedHandler;
 
@@ -63,24 +62,18 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
         mConnectionCompletedHandler = handler;
     }
 
-
-    public void connect() {
+    private void _connect() {
         if (mGoogleApiClient.isConnected()) {
             log("GDrive is already connected");
             return;
         }
-        mGoogleApiClient.connect();
-    }
 
-
-    private void log(String text) {
-        GlobalState.getInstance().log(text);
-    }
-
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        if (connectionResult.hasResolution()) {
+        ConnectionResult connectionResult = mGoogleApiClient.blockingConnect();
+        if (connectionResult.isSuccess()) {
+            log("GDrive connected");
+            synchronizeGDrive();
+            initWorkingFolder();
+        } else if (connectionResult.hasResolution()) {
             try {
                 this.log("Info: Connection failed, user needs to sign in...");
                 connectionResult.startResolutionForResult(this.mActivity, REQUEST_CODE_RESOLUTION);
@@ -92,6 +85,37 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
             this.log("Error: Cannot connect to GDrive and no error resolution possible");
         }
     }
+
+
+    public void connect() {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                _connect();
+            }
+        });
+        backgroundThread.start();
+    }
+
+
+    private void log(String text) {
+        GlobalState.getInstance().log(text);
+    }
+
+
+//    @Override
+//    public void onConnectionFailed(ConnectionResult connectionResult) {
+//        if (connectionResult.hasResolution()) {
+//            try {
+//                this.log("Info: Connection failed, user needs to sign in...");
+//                connectionResult.startResolutionForResult(this.mActivity, REQUEST_CODE_RESOLUTION);
+//            } catch (IntentSender.SendIntentException e) {
+//                // Unable to resolve, message user appropriately
+//                this.log("Error: Something with GDrive went wrong.....");
+//            }
+//        } else {
+//            this.log("Error: Cannot connect to GDrive and no error resolution possible");
+//        }
+//    }
 
 
     private class CurrentDataFile {
@@ -268,35 +292,39 @@ public class GDriveUtilities implements GoogleApiClient.ConnectionCallbacks, Goo
     }
 
 
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        Thread backgroundThread = new Thread(new Runnable() {
-            public void run() {
-                log("GDrive connected");
-                synchronizeGDrive();
-                initWorkingFolder();
-            }});
-            backgroundThread.start();
-        }
+//    @Override
+//    public void onConnected(Bundle connectionHint) {
+//        Thread backgroundThread = new Thread(new Runnable() {
+//            public void run() {
+//                log("GDrive connected");
+//                synchronizeGDrive();
+//                initWorkingFolder();
+//            }});
+//            backgroundThread.start();
+//        }
 
 
     public void synchronizeGDrive() {
         this.log("Synchronizing...");
-        Status result = Drive.DriveApi.requestSync(mGoogleApiClient).await();
-        if (!result.isSuccess()) {
-            log("Synchronization failed failed error - no network connection? Ignoring error...");
-            initWorkingFolder();
-            return;
-        } else {
-            log("Synchronization finished...");
+        try {
+            Status result = Drive.DriveApi.requestSync(mGoogleApiClient).await();
+            if (!result.isSuccess()) {
+                log("Synchronization failed failed error - no network connection? Ignoring error...");
+                initWorkingFolder();
+                return;
+            } else {
+                log("Synchronization finished...");
+            }
+        } catch (Exception ex) {
+            log("Synchronization crashed...");
         }
     }
 
 
-    @Override
-    public void onConnectionSuspended(int cause) {
-        this.log("GDrive connection suspended");
-    }
+//    @Override
+//    public void onConnectionSuspended(int cause) {
+//        this.log("GDrive connection suspended");
+//    }
 
 
     public void initWorkingFolder() {

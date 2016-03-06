@@ -43,7 +43,12 @@ public class GeneralSettingsActivity extends AppCompatActivity {
         this.btnForceSync.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (GlobalState.getInstance().driveUtilities != null) {
-                    GlobalState.getInstance().driveUtilities.synchronizeGDrive();
+                    Thread forceSyncThead =new Thread(){  //Gdrive sync must be called in worker thread
+                        public void run() {
+                            GlobalState.getInstance().driveUtilities.synchronizeGDrive();
+                        }
+                    };
+                    forceSyncThead.start();
                 }
             }
         });

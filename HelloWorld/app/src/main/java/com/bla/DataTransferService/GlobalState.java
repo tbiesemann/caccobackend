@@ -1,6 +1,5 @@
 package com.bla.DataTransferService;
 
-
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
@@ -11,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class GlobalState {
 
-    public String version = "v0.1";
+    public String version = "v0.2";
     public BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
@@ -24,9 +23,7 @@ public class GlobalState {
 
     public GlobalState() {
 
-
         this.mMessageQueue = new LinkedBlockingQueue<String>();
-
 
         this.handler = new Handler() {
             @Override
@@ -37,7 +34,6 @@ public class GlobalState {
 
                 //Log to gdrive
                 if (isGdriveInitialized) {
-
                     Thread backgroundLoggerThread = new Thread(new Runnable() {
                         public void run() {
                             try {
@@ -48,8 +44,6 @@ public class GlobalState {
                         }
                     });
                     backgroundLoggerThread.start();
-
-
                 }
                 super.handleMessage(msg);
             }
@@ -61,7 +55,6 @@ public class GlobalState {
 
 
     public void start() {
-
         log("Starting Aqua " + version);
         log("Connecting to GDrive...");
         GlobalState.getInstance().driveUtilities.connect();
