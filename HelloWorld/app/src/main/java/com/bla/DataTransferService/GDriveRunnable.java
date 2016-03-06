@@ -8,6 +8,7 @@ public class GDriveRunnable implements Runnable {
     GDriveUtilities mGDriveUtilities;
     BlockingQueue<String> mQueue;
 
+
     public GDriveRunnable(GDriveUtilities gDriveUtilities, BlockingQueue<String> queue) {
         this.mGDriveUtilities = gDriveUtilities;
         this.mQueue = queue;
@@ -15,16 +16,20 @@ public class GDriveRunnable implements Runnable {
 
     @Override
     public void run() {
+        String text = "";
         try {
-
             while (true) {
+                if(Thread.interrupted()){
+                    AquaService.getInstance().logToUIOnly("Stopping GDrive runnable..");
+                    return;
+                }
                 Thread.sleep(10);
-                String text = mQueue.take(); //blocking call
+                text = mQueue.take(); //blocking call
                 AquaService.getInstance().logToUIOnly("Writing " + text.length() + " bytes to gdrive:" + text);
                 writeDataToGDrive(text);
             }
         } catch (InterruptedException e) {
-            AquaService.getInstance().log("Writing to GDrive crashed - no error resolution implemented yet");
+            AquaService.getInstance().log("Writing to GDrive aborted. Thread was interrupted. Following " + text.length() + " bytes might be lost:" + text);
             e.printStackTrace();
         }
     }

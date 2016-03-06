@@ -207,6 +207,9 @@ public class BluetoothUtilities {
             }
         }
 
+        this.mBluetoothAdapter = null;
+        this.mDevice = null;
+
         this.mDevice = null;
     }
 

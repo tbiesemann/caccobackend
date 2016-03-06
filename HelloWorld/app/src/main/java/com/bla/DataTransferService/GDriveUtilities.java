@@ -48,7 +48,6 @@ public class GDriveUtilities {
                 .addApi(Drive.API)
                 .addScope(Drive.SCOPE_FILE)
                 .build();
-
     }
 
     public interface IGDriveConnectCompletedEventHandler {
@@ -64,6 +63,8 @@ public class GDriveUtilities {
     private void _connect() {
         if (mGoogleApiClient.isConnected()) {
             log("GDrive is already connected");
+            synchronizeGDrive();
+            initWorkingFolder();
             return;
         }
 
@@ -275,18 +276,6 @@ public class GDriveUtilities {
     }
 
 
-//    @Override
-//    public void onConnected(Bundle connectionHint) {
-//        Thread backgroundThread = new Thread(new Runnable() {
-//            public void run() {
-//                log("GDrive connected");
-//                synchronizeGDrive();
-//                initWorkingFolder();
-//            }});
-//            backgroundThread.start();
-//        }
-
-
     public void synchronizeGDrive() {
         this.log("Synchronizing...");
         try {
@@ -302,12 +291,6 @@ public class GDriveUtilities {
             log("Synchronization crashed...");
         }
     }
-
-
-//    @Override
-//    public void onConnectionSuspended(int cause) {
-//        this.log("GDrive connection suspended");
-//    }
 
 
     public void initWorkingFolder() {
@@ -345,6 +328,19 @@ public class GDriveUtilities {
 
 
     public void destroy() {
+
+        this.mGoogleApiClient.disconnect();
+        this.mGoogleApiClient = null;
+
+        this.mActivity = null;
+        this.mGoogleApiClient = null;
+        this.mCurrentFile = null;
+        this.mLogFile = null;
+        this.mRootFolder = null;
+        this.mAquaFolder = null;
+        this.mWorkingFolder = null;
+        this.mDailyReportsFolder = null;
+
 
     }
 

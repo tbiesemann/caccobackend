@@ -26,6 +26,7 @@ public class AquaService extends Service {
     private Handler handlerForUIOnly;
     private ILogger consoleLogger;
     private Thread mGDriveWriterThread;
+    private Thread mBluetoothCreateConnectionThread;
 
     private final IBinder mBinder = new AquaServiceBinder();
 
@@ -101,30 +102,19 @@ public class AquaService extends Service {
 
 
     private boolean mIsGDriveConnected = false;
-    public void startInitialization() {
-        if(mIsGDriveConnected) {
-            log("Aqua Service is already initialized");
-        } else {
-            mIsGDriveConnected = true;
-            log("Starting Aqua Service " + version);
-            log("Connecting to GDrive...");
-            this.driveUtilities.connect();
-        }
-    }
-
 
 
     static public AquaService getInstance() {
-//        if (instance == null) {
-//            instance = new AquaService();  //TODO: Does this work ??
-//        }
+
         return instance;
     }
 
 
-
     public void setActivity(Activity activity, ILogger logger) throws Exception {
         this.consoleLogger = logger;
+
+        log("Starting Aqua Service " + version);
+
         this.activity = activity;
         if (settings != null) {
             settings.destroy();
@@ -135,8 +125,20 @@ public class AquaService extends Service {
         if (bluetoothUtilities != null) {
             bluetoothUtilities.destroy();
         }
+        if (mGDriveWriterThread != null) {
+            mGDriveWriterThread.interrupt(); //stop gdrive thread
+            mGDriveWriterThread = null;
+        }
+
+        if(mBluetoothCreateConnectionThread != null){
+            mBluetoothCreateConnectionThread.interrupt();
+            mBluetoothCreateConnectionThread = null;
+        }
+
         this.settings = new Settings(activity);
+
         this.bluetoothUtilities = new BluetoothUtilities();
+
         this.isGdriveInitialized = false;
         this.driveUtilities = new GDriveUtilities(activity);
         this.driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IGDriveConnectCompletedEventHandler() {
@@ -146,13 +148,16 @@ public class AquaService extends Service {
                 setupBluetooth();
             }
         });
+
+        log("Connecting to GDrive...");
+        this.driveUtilities.connect();
     }
 
 
     private void setupBluetooth() {
         log("Opening bluetooth...");
 
-        new Thread(new Runnable() {
+        mBluetoothCreateConnectionThread = new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -164,13 +169,14 @@ public class AquaService extends Service {
                         log("Waiting 40 seconds before retry");
                         Thread.sleep(40000);
                     } catch (InterruptedException ex) {
+                        return;
                     }
                     setupBluetooth();
                 }
             }
-        }).start();
+        });
+        mBluetoothCreateConnectionThread.start();
     }
-
 
 
     public void onBluetoothDeviceDisconnected(BluetoothDevice device) {

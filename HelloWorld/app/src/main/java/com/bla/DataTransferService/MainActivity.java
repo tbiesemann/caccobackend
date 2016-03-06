@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
                 log("Something went really wrong: " + ex.toString());
             }
 
-            mService.startInitialization();
         }
 
         @Override
@@ -122,6 +121,9 @@ public class MainActivity extends AppCompatActivity implements ILogger {
             Thread.sleep(5000);
         } catch (InterruptedException ex) {
         }
+
+        this.unbindService(mConnection);
+
         super.onDestroy();
     }
 
