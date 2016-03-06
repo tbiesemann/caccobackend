@@ -64,7 +64,9 @@
         <service
             android:name=".AquaService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".ShowLogFileActivity"></activity>
     </application>
 
 </manifest>

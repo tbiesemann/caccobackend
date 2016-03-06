@@ -17,6 +17,7 @@ import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -116,6 +117,32 @@ public class GDriveUtilities {
         public DriveFile dailyFile;
     }
 
+
+    public String readLogFile(){
+        if(mLogFile == null){
+            return "GDrive not initialized";
+        }
+
+        DriveApi.DriveContentsResult result = mLogFile.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null).await();
+
+        if (!result.getStatus().isSuccess()) {
+            return "Cannot open log file for reading";
+        }
+
+        DriveContents driveContents = result.getDriveContents();
+        String logFileContent;
+        try {
+            ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
+
+            FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
+            byte[] fileContent = new byte[fileInputStream.available()];
+            fileInputStream.read(fileContent);
+            logFileContent = new String(fileContent, "UTF-8");
+        } catch (Exception ex){
+            return "Error reading log file";
+        }
+        return logFileContent;
+    }
 
     public void appendToLogFile(String data) throws Exception {
         String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();

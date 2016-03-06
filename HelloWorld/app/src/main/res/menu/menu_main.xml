@@ -3,4 +3,5 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
     <item android:id="@+id/menu_general" android:title="@string/menu_general"/>
     <item android:id="@+id/menu_bluetooth" android:title="@string/menu_bluetooth"/>
+    <item android:id="@+id/menu_logfile" android:title="@string/menu_logfile"/>
 </menu>

@@ -105,7 +105,6 @@ public class AquaService extends Service {
 
 
     static public AquaService getInstance() {
-
         return instance;
     }
 
@@ -160,6 +159,9 @@ public class AquaService extends Service {
         mBluetoothCreateConnectionThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                if(bluetoothUtilities == null){
+                    return;
+                }
 
                 boolean success = bluetoothUtilities.establishConnection();
                 if (success) {

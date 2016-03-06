@@ -15,8 +15,9 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity implements ILogger {
 
     TextView console;
+    private static String consoleText = "";
 
-    private MainActivity mainActivityInstance;
+    public static MainActivity mainActivityInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements ILogger {
     };
 
 
-    private static String consoleText = "";
+
 
     public void log(String text) {
         int maxConsoleLength = 4000;
@@ -100,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements ILogger {
                 return true;
             case (R.id.menu_general):
                 this.startActivity(new Intent(this, GeneralSettingsActivity.class));
+                return true;
+            case (R.id.menu_logfile):
+                this.startActivity(new Intent(this, ShowLogFileActivity.class));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
