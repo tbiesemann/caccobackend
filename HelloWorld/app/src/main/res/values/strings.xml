@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Aqua Remote Data Transmisson</string>
+    <string name="google_app_id">caccobackend2</string>
+
     <string name="action_settings">Settings</string>
     <string name="menu_bluetooth">Bluetooth Settings</string>
     <string name="menu_logfile">Show Log File</string>
