@@ -172,8 +172,8 @@ public class AquaService extends Service {
                     connectGDriveWithBluetooth();
                 } else {
                     try {
-                        log("Waiting 40 seconds before retry");
-                        Thread.sleep(40000);
+                        log("Waiting 60 seconds before retry");
+                        Thread.sleep(60000);
                     } catch (InterruptedException ex) {
                         return;
                     }

@@ -17,6 +17,7 @@ import com.google.android.gms.drive.DriveFile;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
 import com.google.android.gms.drive.DrivePreferencesApi;
+import com.google.android.gms.drive.ExecutionOptions;
 import com.google.android.gms.drive.FileUploadPreferences;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
@@ -136,6 +137,10 @@ public class GDriveUtilities {
         AquaService.getInstance().log(text);
     }
 
+    private void logToUIOnly(String text) {
+        AquaService.getInstance().logToUIOnly(text);
+    }
+
 
     private class CurrentDataFile {
         public CurrentDataFile(String monthlyFileName, String dailyFileName, DriveFile monthlyFile, DriveFile dailyFile) {
@@ -221,11 +226,19 @@ public class GDriveUtilities {
             log("Error writing to '" + fileName + "' in Gdrive: " + e.toString());
         }
 
-        Status status = driveContents.commit(mGoogleApiClient, null).await();
+        Status status;
+        if (fileName.equals("log.txt")) {
+            ExecutionOptions executionOptions = new ExecutionOptions.Builder().setNotifyOnCompletion(true).setTrackingTag("AppendToLogFile").build();
+            status = driveContents.commit(mGoogleApiClient, null, executionOptions).await();
+        } else {
+            status = driveContents.commit(mGoogleApiClient, null).await();
+        }
+
         if (!status.getStatus().isSuccess()) {
             log("Cannot commit changes to '" + fileName + "'");
             return;
         } else {
+//            logToUIOnly("Committing to Gdrive suceeded for " + fileName + /*" " + data.substring(0, 10) + "..." +*/ " with status " + status.getStatusMessage());
             return;
         }
 
@@ -361,6 +374,7 @@ public class GDriveUtilities {
         mWorkingFolder = getOrCreateFolder(mAquaFolder, locationName);
         mDailyReportsFolder = getOrCreateFolder(mWorkingFolder, "DailyReports");
         mLogFile = getOrCreateFile(mWorkingFolder, mLogFileName);
+        mLogFile.addChangeSubscription(mGoogleApiClient);
         executeInitializationCompletedEventHandler();
     }
 
