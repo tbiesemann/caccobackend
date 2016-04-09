@@ -102,9 +102,6 @@ public class MainActivity extends AppCompatActivity implements ILogger {
             case (R.id.menu_general):
                 this.startActivity(new Intent(this, GeneralSettingsActivity.class));
                 return true;
-            case (R.id.menu_logfile):
-                this.startActivity(new Intent(this, ShowLogFileActivity.class));
-                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

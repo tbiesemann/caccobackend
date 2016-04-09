@@ -40,9 +40,10 @@
         android:layout_height="wrap_content"
         android:text="Save Settings"
         android:id="@+id/btnSaveSettings"
-        android:layout_below="@+id/txtLocationID"
-        android:layout_alignLeft="@+id/txtLocationID"
-        android:layout_alignStart="@+id/txtLocationID" />
+        android:layout_alignBottom="@+id/numberPickerGDriveSyncIntervall"
+        android:layout_alignRight="@+id/btnForceGDriveSync"
+        android:layout_alignEnd="@+id/btnForceGDriveSync"
+        android:layout_marginBottom="38dp" />
 
     <Button
         android:layout_width="wrap_content"
@@ -50,10 +51,10 @@
         android:text="Force GDrive Sync"
         android:id="@+id/btnForceGDriveSync"
         android:singleLine="true"
-        android:layout_below="@+id/txtLocationID"
+        android:layout_above="@+id/textView2"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="109dp" />
+        android:layout_marginBottom="148dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -65,5 +66,24 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="GDrive Sync Intervall (Hours)"
+        android:id="@+id/textView3"
+        android:layout_below="@+id/txtLocationID"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="23dp" />
+
+    <NumberPicker
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/numberPickerGDriveSyncIntervall"
+        android:layout_alignTop="@+id/textView3"
+        android:layout_toRightOf="@+id/textView2"
+        android:layout_toEndOf="@+id/textView2" />
 
 </RelativeLayout>
