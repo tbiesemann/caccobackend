@@ -123,7 +123,11 @@ public class FileService {
         String logFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + "_log.txt";
 
         File oLogFile = getOrCreateFile(this.mDailyReportsDirectory, logFileName);
-        this.writeToFile(oLogFile, data);
+
+        String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
+        final String text = "\n" + now.toString() + "  " + data;
+
+        this.writeToFile(oLogFile, text);
     }
 
 
@@ -168,7 +172,7 @@ public class FileService {
 
     private void writeToFile(File oFile, String data) {
         try {
-            FileWriter writer = new FileWriter(oFile);
+            FileWriter writer = new FileWriter(oFile, true);
             writer.append(data);
             writer.flush();
             writer.close();

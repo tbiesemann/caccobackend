@@ -10,8 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 
 import java.util.Date;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class AquaService extends Service {
@@ -26,7 +24,7 @@ public class AquaService extends Service {
 //    public GDriveUtilities driveUtilities;
     private Activity activity;
 //    private Handler handlerForLoggerInUIAndGDrive;
-    private Handler handlerForUIOnly;
+    private Handler logHandler;
     private ILogger consoleLogger;
 //    private Thread mGDriveWriterThread;
     private Thread mBluetoothCreateConnectionThread;
@@ -75,7 +73,7 @@ public class AquaService extends Service {
 
 
     private void initializeUIOnlyLogger() {
-        this.handlerForUIOnly = new Handler() {
+        this.logHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 final String text = msg.obj.toString();
@@ -208,16 +206,13 @@ public class AquaService extends Service {
     public void log(String text) { //Can be called from any Thread
         Message msg = Message.obtain();
         msg.obj = text;
-
-
-
-        this.handlerForUIOnly.sendMessage(msg);
+        this.logHandler.sendMessage(msg);
     }
 
 //    public void logToUIOnly(String text) { //Can be called from any Thread
 //        Message msg = Message.obtain();
 //        msg.obj = text;
-//        this.handlerForUIOnly.sendMessage(msg);
+//        this.logHandler.sendMessage(msg);
 //    }
 
 
