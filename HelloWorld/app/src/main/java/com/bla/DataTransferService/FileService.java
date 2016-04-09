@@ -120,7 +120,7 @@ public class FileService {
         if (Calendar.DAY_OF_MONTH < 10) {
             day = "0" + day;
         }
-        String logFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + "_log.txt";
+        String logFileName = "log_" + AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + ".txt";
 
         File oLogFile = getOrCreateFile(this.mDailyReportsDirectory, logFileName);
 
