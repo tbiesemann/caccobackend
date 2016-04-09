@@ -7,7 +7,6 @@ import android.os.ParcelFileDescriptor;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
@@ -22,13 +21,15 @@ import com.google.android.gms.drive.FileUploadPreferences;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataChangeSet;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 
 public class GDriveUtilities {
 
@@ -157,7 +158,7 @@ public class GDriveUtilities {
     }
 
 
-    public String readLogFile(){
+    public synchronized String readLogFile(){
         if(mLogFile == null){
             return "GDrive not initialized";
         }
@@ -190,7 +191,62 @@ public class GDriveUtilities {
         appendDataToFile(mLogFile, mLogFileName, text);
     }
 
-    public synchronized void appendDataToFile(DriveFile file, String fileName, String data) throws Exception {
+
+    private class GDriveBufferClass {
+        DriveFile file;
+        String fileName;
+        String buffer;
+    }
+
+    HashMap<String, GDriveBufferClass> gDriveBuffer = new HashMap<>();
+
+    Date lastCommitDate = new Date();
+
+    /**
+     * Saves data and commits to GDrive at most every 5 minutes
+     * @param file
+     * @param fileName
+     * @param data
+     * @throws Exception
+     */
+    private synchronized void appendDataToFile(DriveFile file, String fileName, String data) throws Exception {
+        long gDriveCommitPeriod = 1000 * 60 * 2;
+
+        GDriveBufferClass gDriveFileBuffer = gDriveBuffer.get(fileName);
+        if (gDriveFileBuffer == null){
+            gDriveFileBuffer = new GDriveBufferClass();
+            gDriveFileBuffer.buffer = data;
+            gDriveFileBuffer.file = file;
+            gDriveFileBuffer.fileName = fileName;
+            gDriveBuffer.put(fileName, gDriveFileBuffer);
+        } else {
+            gDriveFileBuffer.file = file;
+            gDriveFileBuffer.buffer = gDriveFileBuffer.buffer + data;
+        }
+
+        long currentTime = new Date().getTime();
+        long lastCommitTime = lastCommitDate.getTime();
+        long timeSinceLastCommit = Math.abs(currentTime - lastCommitTime);
+        if( timeSinceLastCommit > gDriveCommitPeriod) {  //5 minutes since last commit passed
+            GDriveBufferClass[] buffers =  gDriveBuffer.values().toArray(new GDriveBufferClass[gDriveBuffer.size()]);
+            for(int i=0; i<buffers.length; i++){
+                GDriveBufferClass buffer = buffers[i];
+                appendDataToFileAndCommit(buffer.file, buffer.fileName, buffer.buffer);
+                buffer.buffer = "";
+            }
+            lastCommitDate = new Date();
+        }
+    }
+
+
+    /**
+     * Commits to GDrive
+     * @param file
+     * @param fileName
+     * @param data
+     * @throws Exception
+     */
+    private synchronized void appendDataToFileAndCommit(DriveFile file, String fileName, String data) throws Exception {
         if (file == null) {
             throw new Exception("File '" + fileName + "' does not exist");
         }
@@ -204,13 +260,6 @@ public class GDriveUtilities {
 
         try {
             ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
-
-            //For debugging - read content of log file
-//            FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-//            byte[] fileContent = new byte[fileInputStream.available()];
-//            fileInputStream.read(fileContent);
-//            String str = new String(fileContent, "UTF-8");
-
             FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 
             //Jump to end of file
@@ -415,8 +464,7 @@ public class GDriveUtilities {
         this.mAquaFolder = null;
         this.mWorkingFolder = null;
         this.mDailyReportsFolder = null;
-
-
+        this.gDriveBuffer.clear();
     }
 
 }

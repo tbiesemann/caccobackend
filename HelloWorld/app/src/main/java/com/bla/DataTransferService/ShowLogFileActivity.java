@@ -34,9 +34,13 @@ public class ShowLogFileActivity extends AppCompatActivity {
         final Handler LogFileReceiver = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                final String logFile = msg.obj.toString();
-                console.setText(logFile);
-                super.handleMessage(msg);
+                try {
+                    final String logFile = msg.obj.toString();
+                    console.setText(logFile);
+                    super.handleMessage(msg);
+                } catch(Exception ex){
+                    console.setText("Error ocurred " + ex.toString());
+                }
             }
         };
 
