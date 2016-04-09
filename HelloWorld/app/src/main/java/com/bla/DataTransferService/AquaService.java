@@ -18,17 +18,20 @@ public class AquaService extends Service {
 
     public Date mServiceCreationDate;
     public String version = "v0.3";
-    public BlockingQueue<String> mMessageQueue;
+    private FileService fileService;
+//    private BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
-    boolean isGdriveInitialized = false;
-    public GDriveUtilities driveUtilities;
+//    boolean isGdriveInitialized = false;
+//    public GDriveUtilities driveUtilities;
     private Activity activity;
-    private Handler handlerForLoggerInUIAndGDrive;
+//    private Handler handlerForLoggerInUIAndGDrive;
     private Handler handlerForUIOnly;
     private ILogger consoleLogger;
-    private Thread mGDriveWriterThread;
+//    private Thread mGDriveWriterThread;
     private Thread mBluetoothCreateConnectionThread;
+//    private boolean mIsGDriveConnected = false;
+
 
     private final IBinder mBinder = new AquaServiceBinder();
 
@@ -36,38 +39,39 @@ public class AquaService extends Service {
     public AquaService() {
         mServiceCreationDate = new Date();
         instance = this;
-        this.mMessageQueue = new LinkedBlockingQueue<String>();
+//        this.mMessageQueue = new LinkedBlockingQueue<String>();
 
-        initializeGDriveAndUILogger();
+
+//        initializeGDriveAndUILogger();
         initializeUIOnlyLogger();
     }
 
 
-    private void initializeGDriveAndUILogger() {
-        this.handlerForLoggerInUIAndGDrive = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                final String text = msg.obj.toString();
-                //Log to main activity
-                consoleLogger.log(text);
-
-                //Log to gdrive
-                if (isGdriveInitialized) {
-                    Thread backgroundLoggerThread = new Thread(new Runnable() {
-                        public void run() {
-                            try {
-                                driveUtilities.appendToLogFile(text);
-                            } catch (Exception ex) {
-                                consoleLogger.log("ERROR: Writing log to GDrive failed - " + ex.toString());
-                            }
-                        }
-                    });
-                    backgroundLoggerThread.start();
-                }
-                super.handleMessage(msg);
-            }
-        };
-    }
+//    private void initializeGDriveAndUILogger() {
+//        this.handlerForLoggerInUIAndGDrive = new Handler() {
+//            @Override
+//            public void handleMessage(Message msg) {
+//                final String text = msg.obj.toString();
+//                //Log to main activity
+//                consoleLogger.log(text);
+//
+//                //Log to gdrive
+//                if (isGdriveInitialized) {
+//                    Thread backgroundLoggerThread = new Thread(new Runnable() {
+//                        public void run() {
+//                            try {
+//                                driveUtilities.appendToLogFile(text);
+//                            } catch (Exception ex) {
+//                                consoleLogger.log("ERROR: Writing log to GDrive failed - " + ex.toString());
+//                            }
+//                        }
+//                    });
+//                    backgroundLoggerThread.start();
+//                }
+//                super.handleMessage(msg);
+//            }
+//        };
+//    }
 
 
     private void initializeUIOnlyLogger() {
@@ -77,6 +81,11 @@ public class AquaService extends Service {
                 final String text = msg.obj.toString();
                 //Log to main activity
                 consoleLogger.log(text);
+
+                if(fileService != null){
+                    fileService.appendToLogFile(text);
+                }
+
                 super.handleMessage(msg);
             }
         };
@@ -104,7 +113,6 @@ public class AquaService extends Service {
     }
 
 
-    private boolean mIsGDriveConnected = false;
 
 
     static public AquaService getInstance() {
@@ -122,15 +130,18 @@ public class AquaService extends Service {
         if (settings != null) {
             settings.destroy();
         }
-        if (driveUtilities != null) {
-            driveUtilities.destroy();
-        }
+//        if (driveUtilities != null) {
+//            driveUtilities.destroy();
+//        }
         if (bluetoothUtilities != null) {
             bluetoothUtilities.destroy();
         }
-        if (mGDriveWriterThread != null) {
-            mGDriveWriterThread.interrupt(); //stop gdrive thread
-            mGDriveWriterThread = null;
+//        if (mGDriveWriterThread != null) {
+//            mGDriveWriterThread.interrupt(); //stop gdrive thread
+//            mGDriveWriterThread = null;
+//        }
+        if(fileService != null){
+            fileService.destroy();
         }
 
         if(mBluetoothCreateConnectionThread != null){
@@ -142,18 +153,22 @@ public class AquaService extends Service {
 
         this.bluetoothUtilities = new BluetoothUtilities();
 
-        this.isGdriveInitialized = false;
-        this.driveUtilities = new GDriveUtilities(activity);
-        this.driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IGDriveConnectCompletedEventHandler() {
-            @Override
-            public void handle() {
-                isGdriveInitialized = true;
-                setupBluetooth();
-            }
-        });
+        this.fileService = new FileService(this.getApplicationContext(), this.settings.getLocation());
 
-        log("Connecting to GDrive...");
-        this.driveUtilities.connect();
+        setupBluetooth();
+
+//        this.isGdriveInitialized = false;
+//        this.driveUtilities = new GDriveUtilities(activity);
+//        this.driveUtilities.registerConnectCompletedEventHandler(new GDriveUtilities.IGDriveConnectCompletedEventHandler() {
+//            @Override
+//            public void handle() {
+//                isGdriveInitialized = true;
+//                setupBluetooth();
+//            }
+//        });
+
+//        log("Connecting to GDrive...");
+//        this.driveUtilities.connect();
     }
 
 
@@ -169,7 +184,7 @@ public class AquaService extends Service {
 
                 boolean success = bluetoothUtilities.establishConnection();
                 if (success) {
-                    connectGDriveWithBluetooth();
+//                    connectGDriveWithBluetooth();
                 } else {
                     try {
                         log("Waiting 60 seconds before retry");
@@ -193,43 +208,47 @@ public class AquaService extends Service {
     public void log(String text) { //Can be called from any Thread
         Message msg = Message.obtain();
         msg.obj = text;
-        this.handlerForLoggerInUIAndGDrive.sendMessage(msg);
-    }
 
-    public void logToUIOnly(String text) { //Can be called from any Thread
-        Message msg = Message.obtain();
-        msg.obj = text;
+
+
         this.handlerForUIOnly.sendMessage(msg);
     }
 
+//    public void logToUIOnly(String text) { //Can be called from any Thread
+//        Message msg = Message.obtain();
+//        msg.obj = text;
+//        this.handlerForUIOnly.sendMessage(msg);
+//    }
+
 
     public void handleIncomingData(String data) { //Can be called from any thread
-        try {
-            this.mMessageQueue.put(data);
-        } catch (InterruptedException ex) {
-            log("Error writing onto queue:" + ex.toString());
-        }
+//        try {
+            this.fileService.appendToDataFile(data);
+//            this.mMessageQueue.put(data);
+//        } catch (InterruptedException ex) {
+//            log("Error writing onto queue:" + ex.toString());
+//        }
     }
 
 
-    public void connectGDriveWithBluetooth() {
-        log("Connecting bluetooth with google drive..");
-        if (mGDriveWriterThread != null) {
-            log("GDriveRunnable thread is already started.....");
-            return;
-        } else {
-            GDriveRunnable gDriveRunnable = new GDriveRunnable(driveUtilities, mMessageQueue);
-            mGDriveWriterThread = new Thread(gDriveRunnable);
-            mGDriveWriterThread.start();
-            log("Aqua is up and running...");
-        }
-    }
+//    public void connectGDriveWithBluetooth() {
+//        log("Connecting bluetooth with google drive..");
+//        if (mGDriveWriterThread != null) {
+//            log("GDriveRunnable thread is already started.....");
+//            return;
+//        } else {
+//            GDriveRunnable gDriveRunnable = new GDriveRunnable(driveUtilities, mMessageQueue);
+//            mGDriveWriterThread = new Thread(gDriveRunnable);
+//            mGDriveWriterThread.start();
+//            log("Aqua is up and running...");
+//        }
+//    }
 
 
-    public void handleOnMainActivityResult(final int requestCode, final int resultCode) {
-        if (this.driveUtilities != null) {
-            this.driveUtilities.handleOnMainActivityResult(requestCode, resultCode);
-        }
+    public void handleOnMainActivityResult(final int requestCode, final int resultCode) {  //Needed for sign in to GDrive
+//        if (this.driveUtilities != null) {
+//            this.driveUtilities.handleOnMainActivityResult(requestCode, resultCode);
+//        }
     }
 
 }

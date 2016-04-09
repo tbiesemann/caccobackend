@@ -20,12 +20,12 @@ public class GDriveRunnable implements Runnable {
         try {
             while (true) {
                 if(Thread.interrupted()){
-                    AquaService.getInstance().logToUIOnly("Stopping GDrive runnable..");
+//                    AquaService.getInstance().logToUIOnly("Stopping GDrive runnable..");
                     return;
                 }
                 Thread.sleep(10);
                 text = mQueue.take(); //blocking call
-                AquaService.getInstance().logToUIOnly("Writing " + text.length() + " bytes to gdrive:" + text);
+//                AquaService.getInstance().logToUIOnly("Writing " + text.length() + " bytes to gdrive:" + text);
                 writeDataToGDrive(text);
             }
         } catch (InterruptedException e) {

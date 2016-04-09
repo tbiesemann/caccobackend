@@ -7,14 +7,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class FileService {
 
     private Context oContext;
     private String mLocationName;
-    private String mAquaDirectory;
-    private String mLocationDirectory;
-    private String mDailyReportsDirectory;
+    private File mAquaDirectory;
+    private File mLocationDirectory;
+    private File mDailyReportsDirectory;
     private CurrentDataFile mCurrentDataFile;
 
     public FileService(Context context, String locationName) {
@@ -34,53 +35,62 @@ public class FileService {
         return false;
     }
 
-    private String getAquaDirectory() {
-        String sAquaDirectory;
+    private File getAquaDirectory() {
+        boolean result = false;
 
+        File appDirectory;
         if (isExternalStorageWritable()) {
-            File aquaDir = new File(Environment.getExternalStorageDirectory(), "Aqua");
-            if (!aquaDir.exists()) {
-                aquaDir.mkdirs();
-            }
-            sAquaDirectory = Environment.getExternalStorageDirectory().getPath() + File.separator + "Aqua" + File.separator;
+            appDirectory = Environment.getExternalStorageDirectory();
         } else {
-            sAquaDirectory = this.oContext.getApplicationInfo().dataDir;
+            appDirectory = new File(this.oContext.getApplicationInfo().dataDir);
         }
-        return sAquaDirectory;
+
+        File aquaDir = new File(appDirectory, "Aqua");
+        if (!aquaDir.exists()) {
+
+            result = aquaDir.mkdir();
+        }
+
+        if(!result){
+            this.log("Cannot create Aqua directory: " + appDirectory.getAbsolutePath());
+        }
+
+        return aquaDir;
     }
 
-    private String getLocationDirectory() {
-        String sLocationDirectory;
+    private File getLocationDirectory() {
         File locationDir = new File(this.mAquaDirectory, this.mLocationName);
         if (!locationDir.exists()) {
             locationDir.mkdirs();
         }
-        sLocationDirectory = Environment.getExternalStorageDirectory().getPath() + File.separator + this.mLocationName + File.separator;
-        return sLocationDirectory;
+        return locationDir;
     }
 
 
-    private String getDailyReportsDirectory() {
-        String sLocationDirectory;
-        File locationDir = new File(this.mAquaDirectory, "DailyReports");
-        if (!locationDir.exists()) {
-            locationDir.mkdirs();
+    private File getDailyReportsDirectory() {
+        File dailyReportsDir = new File(this.mLocationDirectory, "DailyReports");
+        if (!dailyReportsDir.exists()) {
+            dailyReportsDir.mkdirs();
         }
-        sLocationDirectory = Environment.getExternalStorageDirectory().getPath() + File.separator + "DailyReports" + File.separator;
-        return sLocationDirectory;
+        return dailyReportsDir;
     }
 
 
-    private File getOrCreateFile(String parentDirectory, String fileName) {
+    private File getOrCreateFile(File parentDirectory, String fileName) {
         File oFile = new File(parentDirectory, fileName);
         if (!oFile.exists()) {
             try {
                 oFile.createNewFile();
             } catch (IOException ex) {
-                System.out.println("Error getting file " + fileName + " in file system" + ex.toString());
+                this.log("Error getting file " + fileName + " in file system" + ex.toString());
             }
         }
         return oFile;
+    }
+
+
+    private void log(String text){
+        System.out.println(text);
     }
 
 
@@ -99,7 +109,39 @@ public class FileService {
     }
 
 
-    public void appendToDataFile(String monthlyDataFileName, String dailyDataFileName, String data) {
+    public void appendToLogFile(String data) {
+        Calendar c = Calendar.getInstance();
+        String year = "" + (c.get(Calendar.YEAR));
+        String month = "" + (c.get(Calendar.MONTH) + 1);
+        if (c.get(Calendar.MONTH) < 10) {
+            month = "0" + month;
+        }
+        String day = "" + c.get(Calendar.DAY_OF_MONTH);
+        if (Calendar.DAY_OF_MONTH < 10) {
+            day = "0" + day;
+        }
+        String logFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + "_log.txt";
+
+        File oLogFile = getOrCreateFile(this.mDailyReportsDirectory, logFileName);
+        this.writeToFile(oLogFile, data);
+    }
+
+
+    public void appendToDataFile(String data) {
+
+        // Get Names of monthly and daily data file
+        Calendar c = Calendar.getInstance();
+        String year = "" + (c.get(Calendar.YEAR));
+        String month = "" + (c.get(Calendar.MONTH) + 1);
+        if (c.get(Calendar.MONTH) < 10) {
+            month = "0" + month;
+        }
+        String day = "" + c.get(Calendar.DAY_OF_MONTH);
+        if (Calendar.DAY_OF_MONTH < 10) {
+            day = "0" + day;
+        }
+        String monthlyDataFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + ".txt";
+        String dailyDataFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + ".txt";
 
         if (mCurrentDataFile == null) {
             mCurrentDataFile = new CurrentDataFile(monthlyDataFileName, dailyDataFileName, null, null);
@@ -145,12 +187,12 @@ public class FileService {
      * @return
      */
     private String writeToFile(String sFileName, String sBody) {
-        String sWorkingDirectory = getAquaDirectory();
+        File oWorkingDirectory = getAquaDirectory();
         String sFilePath = "";
 
         try {
 
-            File oFile = new File(sWorkingDirectory, sFileName);
+            File oFile = new File(oWorkingDirectory, sFileName);
             if (!oFile.exists()) {
                 oFile.createNewFile();
             }
@@ -159,7 +201,7 @@ public class FileService {
             writer.append(sBody);
             writer.flush();
             writer.close();
-            sFilePath = sWorkingDirectory + File.separator + sFileName;
+            sFilePath = oWorkingDirectory + File.separator + sFileName;
             System.out.println("File saved in " + sFilePath);
         } catch (IOException e) {
             e.printStackTrace();
@@ -168,12 +210,18 @@ public class FileService {
     }
 
 
+    public void destroy() {
+        this.oContext = null;
+        this.mCurrentDataFile = null;
+    }
+
+
     public ArrayList<String> getFilesFromDisk() {
         ArrayList<String> result = new ArrayList<String>();
         String name;
-        String sWorkingDirectory = getAquaDirectory();
+        File oWorkingDirectory = getAquaDirectory();
 
-        File dir = new File(sWorkingDirectory);
+        File dir = new File(oWorkingDirectory.getAbsolutePath());
         File[] files = dir.listFiles();
         if (files != null) {
             for (File inFile : files) {

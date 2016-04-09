@@ -44,15 +44,15 @@ public class ShowLogFileActivity extends AppCompatActivity {
             }
         };
 
-        Thread fetchLogFileThread = new Thread(new Runnable() {
-            public void run() {
-                String logFile = MainActivity.mainActivityInstance.mService.driveUtilities.readLogFile();
-                Message msg = Message.obtain();
-                msg.obj = logFile;
-                LogFileReceiver.sendMessage(msg);
-            }
-        });
-        fetchLogFileThread.start();
+//        Thread fetchLogFileThread = new Thread(new Runnable() {
+//            public void run() {
+//                String logFile = MainActivity.mainActivityInstance.mService.driveUtilities.readLogFile();
+//                Message msg = Message.obtain();
+//                msg.obj = logFile;
+//                LogFileReceiver.sendMessage(msg);
+//            }
+//        });
+//        fetchLogFileThread.start();
 
 
 //        // Bind to Aqua Service

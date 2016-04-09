@@ -136,7 +136,7 @@ public class GDriveUtilities {
     }
 
     private void logToUIOnly(String text) {
-        AquaService.getInstance().logToUIOnly(text);
+//        AquaService.getInstance().logToUIOnly(text);
     }
 
 
