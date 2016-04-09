@@ -220,22 +220,25 @@ public class FileService {
     }
 
 
-    public ArrayList<String> getFilesFromDisk() {
-        ArrayList<String> result = new ArrayList<String>();
-        String name;
-        File oWorkingDirectory = getAquaDirectory();
+    public ArrayList<File> getDailyFiles() {
+        return getFilesOfDirectory(getDailyReportsDirectory());
+    }
 
-        File dir = new File(oWorkingDirectory.getAbsolutePath());
-        File[] files = dir.listFiles();
+    public ArrayList<File> getMonthlyFiles() {
+        return getFilesOfDirectory(getLocationDirectory());
+    }
+
+
+    private ArrayList<File> getFilesOfDirectory(File directory){
+        ArrayList<File> result = new ArrayList<File>();
+        File[] files = directory.listFiles();
         if (files != null) {
             for (File inFile : files) {
                 if (inFile.isFile()) {
-                    name = inFile.getName();
-                    result.add(name);
+                    result.add(inFile);
                 }
             }
         }
-
         return result;
     }
 

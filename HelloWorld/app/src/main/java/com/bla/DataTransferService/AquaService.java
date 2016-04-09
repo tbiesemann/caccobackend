@@ -9,6 +9,8 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -77,6 +79,7 @@ public class AquaService extends Service {
 
     public void synchronizeToGDrive() {
         log("Starting GDrive synchronization");
+
 //                    Thread forceSyncThead =new Thread(){  //Gdrive sync must be called in worker thread
 //                        public void run() {
 //                            AquaService.getInstance().driveUtilities.synchronizeGDrive();
