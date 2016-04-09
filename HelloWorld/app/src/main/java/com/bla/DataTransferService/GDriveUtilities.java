@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -57,9 +56,7 @@ public class GDriveUtilities {
                 .addScope(Drive.SCOPE_FILE)
                 .build();
 
-
         this.checkDrivePreferences();
-
     }
 
 

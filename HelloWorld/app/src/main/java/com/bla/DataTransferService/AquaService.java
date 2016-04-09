@@ -17,7 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class AquaService extends Service {
 
     public Date mServiceCreationDate;
-    public String version = "v0.2";
+    public String version = "v0.3";
     public BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
