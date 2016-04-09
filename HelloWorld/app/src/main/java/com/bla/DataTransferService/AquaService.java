@@ -10,6 +10,8 @@ import android.os.Handler;
 import android.os.Message;
 
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class AquaService extends Service {
@@ -17,17 +19,18 @@ public class AquaService extends Service {
     public Date mServiceCreationDate;
     public String version = "v0.3";
     private FileService fileService;
-//    private BlockingQueue<String> mMessageQueue;
+    //    private BlockingQueue<String> mMessageQueue;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
-//    boolean isGdriveInitialized = false;
+    //    boolean isGdriveInitialized = false;
 //    public GDriveUtilities driveUtilities;
     private Activity activity;
-//    private Handler handlerForLoggerInUIAndGDrive;
+    //    private Handler handlerForLoggerInUIAndGDrive;
     private Handler logHandler;
     private ILogger consoleLogger;
-//    private Thread mGDriveWriterThread;
+    //    private Thread mGDriveWriterThread;
     private Thread mBluetoothCreateConnectionThread;
+    private Thread mSyncWithGDriveThread;
 //    private boolean mIsGDriveConnected = false;
 
 
@@ -72,6 +75,16 @@ public class AquaService extends Service {
 //    }
 
 
+    public void synchronizeToGDrive() {
+        log("Starting GDrive synchronization");
+//                    Thread forceSyncThead =new Thread(){  //Gdrive sync must be called in worker thread
+//                        public void run() {
+//                            AquaService.getInstance().driveUtilities.synchronizeGDrive();
+//                        }
+//                    };
+//                    forceSyncThead.start();
+    }
+
     private void initializeUIOnlyLogger() {
         this.logHandler = new Handler() {
             @Override
@@ -80,7 +93,7 @@ public class AquaService extends Service {
                 //Log to main activity
                 consoleLogger.log(text);
 
-                if(fileService != null){
+                if (fileService != null) {
                     fileService.appendToLogFile(text);
                 }
 
@@ -111,8 +124,6 @@ public class AquaService extends Service {
     }
 
 
-
-
     static public AquaService getInstance() {
         return instance;
     }
@@ -138,13 +149,18 @@ public class AquaService extends Service {
 //            mGDriveWriterThread.interrupt(); //stop gdrive thread
 //            mGDriveWriterThread = null;
 //        }
-        if(fileService != null){
+        if (fileService != null) {
             fileService.destroy();
         }
 
-        if(mBluetoothCreateConnectionThread != null){
+        if (mBluetoothCreateConnectionThread != null) {
             mBluetoothCreateConnectionThread.interrupt();
             mBluetoothCreateConnectionThread = null;
+        }
+
+        if (mSyncWithGDriveThread != null) {
+            mSyncWithGDriveThread.interrupt();
+            mSyncWithGDriveThread = null;
         }
 
         this.settings = new Settings(activity);
@@ -154,6 +170,7 @@ public class AquaService extends Service {
         this.fileService = new FileService(this.getApplicationContext(), this.settings.getLocation());
 
         setupBluetooth();
+        setupGDriveSyncIntervallTimer(this.settings.getGDriveSyncIntervall());
 
 //        this.isGdriveInitialized = false;
 //        this.driveUtilities = new GDriveUtilities(activity);
@@ -170,13 +187,25 @@ public class AquaService extends Service {
     }
 
 
+    private void setupGDriveSyncIntervallTimer(final Integer IntervalInHours) {
+        long milliseconds = IntervalInHours * 60000;
+        log("Synchronizing with GDrive every " + IntervalInHours + " hours");
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                synchronizeToGDrive();
+            }
+        }, 0, milliseconds);
+    }
+
+
     private void setupBluetooth() {
         log("Opening bluetooth...");
 
         mBluetoothCreateConnectionThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                if(bluetoothUtilities == null){
+                if (bluetoothUtilities == null) {
                     return;
                 }
 
@@ -216,9 +245,9 @@ public class AquaService extends Service {
 //    }
 
 
-    public void handleIncomingData(String data) { //Can be called from any thread
+    public void handleIncomingData(String data) {
 //        try {
-            this.fileService.appendToDataFile(data);
+        this.fileService.appendToDataFile(data);
 //            this.mMessageQueue.put(data);
 //        } catch (InterruptedException ex) {
 //            log("Error writing onto queue:" + ex.toString());
