@@ -28,6 +28,10 @@ public class Settings {
         return settings.getString("deviceName", "");
     }
 
+    public Integer getGDriveSyncIntervall(){
+        return settings.getInt("GDriveSyncIntervall", 3);
+    }
+
 
     public void destroy(){
 

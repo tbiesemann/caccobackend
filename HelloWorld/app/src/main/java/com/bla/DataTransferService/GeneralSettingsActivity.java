@@ -51,8 +51,8 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 
 
         btnForceSync = (Button) findViewById(R.id.btnForceGDriveSync);
-//        this.btnForceSync.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
+        this.btnForceSync.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
 //                if (AquaService.getInstance().driveUtilities != null) {
 //                    Thread forceSyncThead =new Thread(){  //Gdrive sync must be called in worker thread
 //                        public void run() {
@@ -61,7 +61,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
 //                    };
 //                    forceSyncThead.start();
 //                }
-//            }
-//        });
+            }
+        });
     }
 }
