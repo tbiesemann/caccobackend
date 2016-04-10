@@ -105,15 +105,16 @@ public class GDriveUtilities {
 
 
         if (fileSize < gDriveFileSize) {
-            log("Error: " + file.getName() + " has size " + fileSize + " in fle system and " + gDriveFileSize + " in GDrive. File in GDrive must not be larger!");
-            return;
+            log("Error: " + file.getName() + " has size " + fileSize + " in file system and " + gDriveFileSize + " in GDrive. File in GDrive must not be larger! GDrive will be overwritten.");
+        } else {
+            log("Writing " + fileSize + " bytes to " +  file.getName() + " in GDrive");
         }
 
         //Read data from file system
-        String data = this.getFileContentStartingAtIndexToSync(file, (int) gDriveFileSize);
+        String data = this.getFileContent(file);
 
-        //Open file for editing
-        DriveApi.DriveContentsResult result = driveFile.open(mGoogleApiClient, DriveFile.MODE_READ_WRITE, null).await();
+        //Open file for editing. Content will be truncated.
+        DriveApi.DriveContentsResult result = driveFile.open(mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null).await();
         if (!result.getStatus().isSuccess()) {
             log("Cannot open file '" + file.getName() + "' for editing");
             return;
@@ -124,10 +125,10 @@ public class GDriveUtilities {
             ParcelFileDescriptor parcelFileDescriptor = driveContents.getParcelFileDescriptor();
             FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 
-            //Jump to end of file
-            FileChannel channel = fileOutputStream.getChannel();
-            long size = channel.size();
-            channel.position(size);
+//            //Jump to end of file
+//            FileChannel channel = fileOutputStream.getChannel();
+//            long size = channel.size();
+//            channel.position(size);
 
             Writer writer = new OutputStreamWriter(fileOutputStream);
             writer.write(data);
@@ -147,7 +148,7 @@ public class GDriveUtilities {
     }
 
 
-    private String getFileContentStartingAtIndexToSync(File file, int startIndex){
+    private String getFileContent(File file){
         int fileLength = (int) file.length();
         char[] buffer = new char[fileLength];
 
@@ -160,7 +161,7 @@ public class GDriveUtilities {
             log("Error reading file from file system: " + file.getName() + ex.toString());
         }
 
-        String result = new String(buffer).substring(startIndex);
+        String result = new String(buffer);
         return result;
     }
 
@@ -449,7 +450,7 @@ public class GDriveUtilities {
                     if (metadata.isTrashed()) {
                         log(fileName + " file is trashed...will be ignored");
                     } else {
-                        log("Successfully found '" + fileName + "' file");
+                        //log("Successfully found '" + fileName + "' file");
                         return metadata.getDriveId().asDriveFile();
                     }
                 }
