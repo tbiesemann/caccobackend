@@ -182,36 +182,36 @@ public class FileService {
         }
     }
 
-
-    /**
-     * If file already exists, content is appended to existing file
-     *
-     * @param sFileName
-     * @param sBody
-     * @return
-     */
-    private String writeToFile(String sFileName, String sBody) {
-        File oWorkingDirectory = getAquaDirectory();
-        String sFilePath = "";
-
-        try {
-
-            File oFile = new File(oWorkingDirectory, sFileName);
-            if (!oFile.exists()) {
-                oFile.createNewFile();
-            }
-
-            FileWriter writer = new FileWriter(oFile);
-            writer.append(sBody);
-            writer.flush();
-            writer.close();
-            sFilePath = oWorkingDirectory + File.separator + sFileName;
-            System.out.println("File saved in " + sFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return sFilePath;
-    }
+//
+//    /**
+//     * If file already exists, content is appended to existing file
+//     *
+//     * @param sFileName
+//     * @param sBody
+//     * @return
+//     */
+//    private String writeToFile(String sFileName, String sBody) {
+//        File oWorkingDirectory = getAquaDirectory();
+//        String sFilePath = "";
+//
+//        try {
+//
+//            File oFile = new File(oWorkingDirectory, sFileName);
+//            if (!oFile.exists()) {
+//                oFile.createNewFile();
+//            }
+//
+//            FileWriter writer = new FileWriter(oFile);
+//            writer.append(sBody);
+//            writer.flush();
+//            writer.close();
+//            sFilePath = oWorkingDirectory + File.separator + sFileName;
+//            System.out.println("File saved in " + sFilePath);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return sFilePath;
+//    }
 
 
     public void destroy() {
