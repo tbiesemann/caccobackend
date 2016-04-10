@@ -107,7 +107,7 @@ public class GDriveUtilities {
         if (fileSize < gDriveFileSize) {
             log("Error: " + file.getName() + " has size " + fileSize + " in file system and " + gDriveFileSize + " in GDrive. File in GDrive must not be larger! GDrive will be overwritten.");
         } else {
-            log("Writing " + fileSize + " bytes to " +  file.getName() + " in GDrive");
+            log("Writing " + fileSize + " bytes to " +  file.getName() + " in GDrive. Previus size in GDrive was " + gDriveFileSize);
         }
 
         //Read data from file system
