@@ -148,19 +148,19 @@ public class GDriveUtilities {
 
 
     private String getFileContentStartingAtIndexToSync(File file, int startIndex){
-        int size = (int) file.length() - startIndex;
-        char[] buffer = new char[size];
+        int fileLength = (int) file.length();
+        char[] buffer = new char[fileLength];
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
-            br.read(buffer, startIndex, size);
+            br.read(buffer);
             br.close();
         }
         catch (IOException ex) {
             log("Error reading file from file system: " + file.getName() + ex.toString());
         }
 
-        String result = new String(buffer);
+        String result = new String(buffer).substring(startIndex);
         return result;
     }
 
