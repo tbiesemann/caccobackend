@@ -28,6 +28,7 @@ public class AquaService extends Service {
     private Handler logHandler;
     private ILogger consoleLogger;
     private Thread mBluetoothCreateConnectionThread;
+    private Timer mGDriveSyncTimer;
 
 
     private final IBinder mBinder = new AquaServiceBinder();
@@ -60,6 +61,10 @@ public class AquaService extends Service {
 
         if (mFileService != null) {
             mFileService.destroy();
+        }
+        if(this.mGDriveSyncTimer != null){
+            this.mGDriveSyncTimer.cancel();
+            this.mGDriveSyncTimer = null;
         }
 
         if (mBluetoothCreateConnectionThread != null) {
@@ -144,7 +149,8 @@ public class AquaService extends Service {
     private void setupGDriveSyncIntervallTimer(final Integer IntervalInHours) {
         long milliseconds = IntervalInHours * 3600000;
         log("Synchronizing with GDrive every " + IntervalInHours + " hours");
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+        this.mGDriveSyncTimer = new Timer();
+        this.mGDriveSyncTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 synchronizeToGDrive();
@@ -164,9 +170,7 @@ public class AquaService extends Service {
                 }
 
                 boolean success = bluetoothUtilities.establishConnection();
-                if (success) {
-//                    connectGDriveWithBluetooth();
-                } else {
+                if (!success) {
                     try {
                         log("Waiting 60 seconds before retry");
                         Thread.sleep(60000);
