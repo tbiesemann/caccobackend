@@ -28,7 +28,6 @@ public class AquaService extends Service {
     private Handler logHandler;
     private ILogger consoleLogger;
     private Thread mBluetoothCreateConnectionThread;
-    private Thread mSyncWithGDriveThread;
 
 
     private final IBinder mBinder = new AquaServiceBinder();
@@ -67,12 +66,6 @@ public class AquaService extends Service {
             mBluetoothCreateConnectionThread.interrupt();
             mBluetoothCreateConnectionThread = null;
         }
-
-        if (mSyncWithGDriveThread != null) {
-            mSyncWithGDriveThread.interrupt();
-            mSyncWithGDriveThread = null;
-        }
-
         this.settings = new Settings(activity);
 
         this.bluetoothUtilities = new BluetoothUtilities();
