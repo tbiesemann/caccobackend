@@ -245,7 +245,7 @@ public class GDriveUtilities {
                         log(folderName + " folder is trashed...will be ignored");
                     } else {
                         DriveId workingFolderDriveId = metadata.getDriveId();
-                        log("Successfully found '" + folderName + "' folder");
+                        log("Found '" + folderName + "' folder");
                         return metadata.getDriveId().asDriveFolder();
                     }
                 }
@@ -282,7 +282,6 @@ public class GDriveUtilities {
                     if (metadata.isTrashed()) {
                         log(fileName + " file is trashed...will be ignored");
                     } else {
-                        //log("Successfully found '" + fileName + "' file");
                         return metadata.getDriveId().asDriveFile();
                     }
                 }

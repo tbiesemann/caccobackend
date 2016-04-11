@@ -126,7 +126,7 @@ public class BluetoothUtilities {
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
-                                    log("Received data from Bluetooth: " + data.length() + " bytes");
+                                    log("" + data.length() + " bytes");
                                     AquaService.getInstance().handleIncomingData(data);
                                 } else {
                                     readBuffer[readBufferPosition++] = b;
