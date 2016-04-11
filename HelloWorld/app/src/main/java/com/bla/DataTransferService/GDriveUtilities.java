@@ -33,40 +33,17 @@ import java.util.HashMap;
 
 public class GDriveUtilities {
 
-    //final String mLogFileName = "log.txt";
-    //    Context mContext;
     private GoogleApiClient mGoogleApiClient;
-    //    private CurrentDataFile mCurrentFile;
     private DriveFile mLogFile;
-//    DriveFolder mRootFolder;
-//    DriveFolder mAquaFolder;
-//    DriveFolder mLocationFolder;
-//    DriveFolder mDailyReportsFolder;
-
-
-    // public static final int REQUEST_CODE_RESOLUTION = 42;
-
 
     public GDriveUtilities(GoogleApiClient gDriveAPI) {// throws Exception {
-//        if (context == null) {
-//            throw new Exception("Mandatory context missing");
-//        }
-//        this.mContext = context;
         this.mGoogleApiClient = gDriveAPI;
-
     }
 
 
     public interface IGDriveConnectCompletedEventHandler {
         void handle();
     }
-
-//    IGDriveConnectCompletedEventHandler mConnectionCompletedHandler;
-
-//    public void registerConnectCompletedEventHandler(IGDriveConnectCompletedEventHandler handler) {
-//        mConnectionCompletedHandler = handler;
-//    }
-
 
     public void synchronize(String locationName, ArrayList<File> monthlyFiles, ArrayList<File> dailyFiles) {
 
@@ -86,10 +63,7 @@ public class GDriveUtilities {
 
 
     private void syncFileToGDrive(DriveFolder parentFolder, File file) {
-
         DriveFile driveFile = getOrCreateFile(parentFolder, file.getName());
-
-
         if (driveFile == null) {
             log("Error getting file '" + file.getName() + "' on GDrive");
             return;
@@ -166,72 +140,10 @@ public class GDriveUtilities {
     }
 
 
-//    private void initWorkingFolder(String locationName) {
-//        mRootFolder = Drive.DriveApi.getRootFolder(this.mGoogleApiClient);
-//        mAquaFolder = getOrCreateFolder(mRootFolder, "Aqua");
-//        mLocationFolder = getOrCreateFolder(mAquaFolder, locationName);
-//        mDailyReportsFolder = getOrCreateFolder(mLocationFolder, "DailyReports");
-////        mLogFile = getOrCreateFile(mLocationFolder, mLogFileName);
-////        mLogFile.addChangeSubscription(mGoogleApiClient);
-////        executeInitializationCompletedEventHandler();
-//    }
-
-
-//    private void _connect(Activity activity) {
-//        if (mGoogleApiClient.isConnected()) {
-//            log("GDrive is already connected");
-////            synchronizeGDrive();
-////            initWorkingFolder();
-//            return;
-//        }
-//
-//        ConnectionResult connectionResult = mGoogleApiClient.blockingConnect();
-//        if (connectionResult.isSuccess()) {
-//            log("GDrive connected");
-////            synchronizeGDrive();
-////            initWorkingFolder();
-//        } else if (connectionResult.hasResolution()) {
-//            try {
-//                this.log("Info: Connection failed, user needs to sign in...");
-//                connectionResult.startResolutionForResult(this.mContext, REQUEST_CODE_RESOLUTION);
-//            } catch (IntentSender.SendIntentException e) {
-//                // Unable to resolve, message user appropriately
-//                this.log("Error: Something with GDrive went wrong.....");
-//            }
-//        } else {
-//            this.log("Error: Cannot connect to GDrive and no error resolution possible");
-//        }
-//    }
-
-
-//    public void connect(final Activity activity) {
-//        Thread backgroundThread = new Thread(new Runnable() {
-//            public void run() {
-//                _connect(activity);
-//            }
-//        });
-//        backgroundThread.start();
-//    }
-
 
     private void log(String text) {
         AquaService.getInstance().log(text);
     }
-
-
-//    private class CurrentDataFile {
-//        public CurrentDataFile(String monthlyFileName, String dailyFileName, DriveFile monthlyFile, DriveFile dailyFile) {
-//            this.monthlyFileName = monthlyFileName;
-//            this.dailyFileName = dailyFileName;
-//            this.monthlyFile = monthlyFile;
-//            this.dailyFile = dailyFile;
-//        }
-//
-//        public String monthlyFileName;
-//        public String dailyFileName;
-//        public DriveFile monthlyFile;
-//        public DriveFile dailyFile;
-//    }
 
 
     public synchronized String readLogFile() {
@@ -259,63 +171,8 @@ public class GDriveUtilities {
         }
         return logFileContent;
     }
-//
-//    public void appendToLogFile(String data) throws Exception {
-//        String now = android.text.format.DateFormat.format("yyyy-MM-dd HH:mm:ss", new java.util.Date()).toString();
-//        final String text = "\n" + now.toString() + "  " + data;
-//
-//        appendDataToFile(mLogFile, mLogFileName, text);
-//    }
 
-
-//    private class GDriveBufferClass {
-//        DriveFile file;
-//        String fileName;
-//        String buffer;
-//    }
-
-//    HashMap<String, GDriveBufferClass> gDriveBuffer = new HashMap<>();
-
-//    Date lastCommitDate = new Date();
-
-    /**
-     * Saves data and commits to GDrive at most every 5 minutes
-     *
-     * @param file
-     * @param fileName
-     * @param data
-     * @throws Exception
-     */
-//    private synchronized void appendDataToFile(DriveFile file, String fileName, String data) throws Exception {
-//        long gDriveCommitPeriod = 1000 * 60 * 2;
-//
-//        GDriveBufferClass gDriveFileBuffer = gDriveBuffer.get(fileName);
-//        if (gDriveFileBuffer == null) {
-//            gDriveFileBuffer = new GDriveBufferClass();
-//            gDriveFileBuffer.buffer = data;
-//            gDriveFileBuffer.file = file;
-//            gDriveFileBuffer.fileName = fileName;
-//            gDriveBuffer.put(fileName, gDriveFileBuffer);
-//        } else {
-//            gDriveFileBuffer.file = file;
-//            gDriveFileBuffer.buffer = gDriveFileBuffer.buffer + data;
-//        }
-//
-//        long currentTime = new Date().getTime();
-//        long lastCommitTime = lastCommitDate.getTime();
-//        long timeSinceLastCommit = Math.abs(currentTime - lastCommitTime);
-//        if (timeSinceLastCommit > gDriveCommitPeriod) {  //5 minutes since last commit passed
-//            GDriveBufferClass[] buffers = gDriveBuffer.values().toArray(new GDriveBufferClass[gDriveBuffer.size()]);
-//            for (int i = 0; i < buffers.length; i++) {
-//                GDriveBufferClass buffer = buffers[i];
-//                appendDataToFileAndCommit(buffer.file, buffer.fileName, buffer.buffer);
-//                buffer.buffer = "";
-//            }
-//            lastCommitDate = new Date();
-//        }
-//    }
-
-
+	
     /**
      * Commits to GDrive
      *
@@ -370,31 +227,6 @@ public class GDriveUtilities {
         }
 
     }
-
-
-//    public void appendToDataFile(String monthlyDataFileName, String dailyDataFileName, String data) {
-//
-//        if (mCurrentFile == null) {
-//            mCurrentFile = new CurrentDataFile(monthlyDataFileName, dailyDataFileName, null, null);
-//        }
-//
-//        if (!monthlyDataFileName.equals(mCurrentFile.monthlyFileName) || mCurrentFile.monthlyFile == null) {
-//            mCurrentFile.monthlyFileName = monthlyDataFileName;
-//            mCurrentFile.monthlyFile = getOrCreateFile(mLocationFolder, monthlyDataFileName);
-//        }
-//
-//        if (!dailyDataFileName.equals(mCurrentFile.dailyFileName) || mCurrentFile.dailyFile == null) {
-//            mCurrentFile.dailyFileName = dailyDataFileName;
-//            mCurrentFile.dailyFile = getOrCreateFile(mDailyReportsFolder, dailyDataFileName);
-//        }
-//
-//        try {
-//            this.appendDataToFile(mCurrentFile.monthlyFile, mCurrentFile.monthlyFileName, data);
-//            this.appendDataToFile(mCurrentFile.dailyFile, mCurrentFile.dailyFileName, data);
-//        } catch (Exception ex) {
-//            log("Error writing data files to GDrive");
-//        }
-//    }
 
 
     private DriveFolder getOrCreateFolder(DriveFolder parentFolder, String folderName) {
@@ -476,60 +308,11 @@ public class GDriveUtilities {
         }
     }
 
-//
-//    public void synchronizeGDrive() {
-//        this.log("Synchronizing...");
-//        try {
-//            Status result = Drive.DriveApi.requestSync(mGoogleApiClient).await();
-//            if (!result.isSuccess()) {
-//                log("Synchronization failed failed error - no network connection? Ignoring error...");
-//                initWorkingFolder();
-//                return;
-//            } else {
-//                log("Synchronization finished...");
-//            }
-//        } catch (Exception ex) {
-//            log("Synchronization crashed...");
-//        }
-//    }
-
-
-//    private void executeInitializationCompletedEventHandler() {
-//        if (mConnectionCompletedHandler != null) {
-//            mConnectionCompletedHandler.handle();
-//        }
-//    }
-
-//
-//    public void handleOnMainActivityResult(final int requestCode, final int resultCode) {
-//        switch (requestCode) {
-//            case GDriveUtilities.REQUEST_CODE_RESOLUTION:
-//                if (resultCode == Activity.RESULT_OK) {
-//                    log("Trying to connect after sign in");
-//                    connect();
-//                } else if (resultCode == Activity.RESULT_CANCELED) {
-//                    log("Sign in failed - cancelled");
-//                } else {
-//                    log("Sign in failed!");
-//                }
-//                break;
-//        }
-//    }
-
 
     public void destroy() {
 
         this.mGoogleApiClient.disconnect();
         this.mGoogleApiClient = null;
-
-        // this.mContext = null;
-//        this.mCurrentFile = null;
-//        this.mLogFile = null;
-//        this.mRootFolder = null;
-//        this.mAquaFolder = null;
-//        this.mLocationFolder = null;
-//        this.mDailyReportsFolder = null;
-//        this.gDriveBuffer.clear();
     }
 
 }
