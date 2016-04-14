@@ -9,6 +9,8 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,12 +21,14 @@ import java.util.TimerTask;
 
 public class AquaService extends Service {
 
+    private boolean mIsInitialized = false;
+    private boolean mIsDestroyed = false;
     public Date mServiceCreationDate;
     public String version = "v0.3";
     private FileService mFileService;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
-    private GDriveSignIn mGDriveSignIn;
+    private GoogleApiClient mGDriveAPI;
     private Handler logHandler;
     private ILogger consoleLogger;
     private Thread mBluetoothCreateConnectionThread;
@@ -41,49 +45,27 @@ public class AquaService extends Service {
     }
 
 
-    public void setActivity(Activity activity, ILogger logger) throws Exception {
+    public void init(GoogleApiClient gDriveAPI, ILogger logger) throws Exception {
         this.consoleLogger = logger;
-
         log("Aqua Service was created " + mServiceCreationDate.toString());
-        log("(Re)Starting Aqua Service " + version);
 
-        if (settings != null) {
-            settings.destroy();
-        }
-        if (bluetoothUtilities != null) {
-            bluetoothUtilities.destroy();
-        }
-        if (mGDriveSignIn != null) {
-            mGDriveSignIn.destroy();
-            mGDriveSignIn = null;
+        if (this.mIsInitialized) {
+            log("Error: Service is already initialized");
+            return;
         }
 
-        if (mFileService != null) {
-            mFileService.destroy();
-        }
-        if (this.mGDriveSyncTimer != null) {
-            this.mGDriveSyncTimer.cancel();
-            this.mGDriveSyncTimer = null;
-        }
+        this.mIsInitialized = true;
 
-        if (mBluetoothCreateConnectionThread != null) {
-            mBluetoothCreateConnectionThread.interrupt();
-            mBluetoothCreateConnectionThread = null;
-        }
+        mGDriveAPI = gDriveAPI;
         this.settings = new Settings(this.getApplicationContext());
-
         this.bluetoothUtilities = new BluetoothUtilities();
-
         this.mFileService = new FileService(this.getApplicationContext(), this.settings.getLocation());
-
         setupBluetooth();
+        setupGDriveSyncIntervallTimer(settings.getGDriveSyncIntervall());
+    }
 
-        this.mGDriveSignIn = new GDriveSignIn(activity, this.getApplicationContext(), new GDriveSignIn.IGDriveSignInCompletedEventHandler() {
-            @Override
-            public void handle() {
-                setupGDriveSyncIntervallTimer(settings.getGDriveSyncIntervall());
-            }
-        });
+    public boolean isInitialized() {
+        return this.mIsInitialized;
     }
 
 
@@ -92,7 +74,7 @@ public class AquaService extends Service {
 
         GDriveUtilities driveUtilities;
         try {
-            driveUtilities = new GDriveUtilities(this.mGDriveSignIn.getGDriveAPI());
+            driveUtilities = new GDriveUtilities(this.mGDriveAPI);
         } catch (Exception ex) {
             log("Exception while creating GDrive utilities: " + ex.toString());
             return;
@@ -209,11 +191,29 @@ public class AquaService extends Service {
         this.mFileService.appendToDataFile(data);
     }
 
+    public void onDestroy() {
+        log("Service being destroyed...");
+        super.onDestroy();
 
-    public void handleOnMainActivityResult(final int requestCode, final int resultCode) {  //Needed for sign in to GDrive
-        if (this.mGDriveSignIn != null) {
-            this.mGDriveSignIn.handleOnMainActivityResult(requestCode, resultCode);
+        this.mIsDestroyed = true;
+        if (settings != null) {
+            settings.destroy();
         }
+        if (bluetoothUtilities != null) {
+            bluetoothUtilities.destroy();
+        }
+        if (mFileService != null) {
+            mFileService.destroy();
+        }
+        if (this.mGDriveSyncTimer != null) {
+            this.mGDriveSyncTimer.cancel();
+            this.mGDriveSyncTimer = null;
+        }
+        if (mBluetoothCreateConnectionThread != null) {
+            mBluetoothCreateConnectionThread.interrupt();
+            mBluetoothCreateConnectionThread = null;
+        }
+
     }
 
 }

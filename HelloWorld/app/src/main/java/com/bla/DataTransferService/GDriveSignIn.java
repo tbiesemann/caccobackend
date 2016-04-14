@@ -15,7 +15,6 @@ import com.google.android.gms.drive.FileUploadPreferences;
 
 public class GDriveSignIn {
 
-    private Context mContext;
     private Activity mActivity;
     private GoogleApiClient mGoogleApiClient;
 
@@ -23,16 +22,15 @@ public class GDriveSignIn {
     public static final int REQUEST_CODE_RESOLUTION = 42;
 
 
-    public GDriveSignIn(Activity activity, Context context, IGDriveSignInCompletedEventHandler handler) throws Exception {
+    public GDriveSignIn(Activity activity, IGDriveSignInCompletedEventHandler handler) throws Exception {
         if (activity == null) {
             throw new Exception("Mandatory activity missing");
         }
 
         this.mActivity = activity;
-        this.mContext = context;
         this.mSignInCompletedHandler = handler;
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this.mContext)
+        mGoogleApiClient = new GoogleApiClient.Builder(this.mActivity)
                 .addApi(Drive.API)
                 .addScope(Drive.SCOPE_FILE)
                 .build();
@@ -70,11 +68,11 @@ public class GDriveSignIn {
     }
 
     public interface IGDriveSignInCompletedEventHandler {
-        void handle();
+        void onGDriveSignInCompleted();
     }
 
     private void raiseSignInCompletedEvent() {
-        mSignInCompletedHandler.handle();
+        mSignInCompletedHandler.onGDriveSignInCompleted();
     }
 
 
@@ -132,7 +130,6 @@ public class GDriveSignIn {
     public void destroy() {
         this.mGoogleApiClient.disconnect();
         this.mGoogleApiClient = null;
-        this.mContext = null;
         this.mActivity = null;
     }
 

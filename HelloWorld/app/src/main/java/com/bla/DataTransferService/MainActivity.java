@@ -12,11 +12,14 @@ import android.view.MenuItem;
 import android.content.Intent;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity implements ILogger {
+import com.google.android.gms.common.api.GoogleApiClient;
+
+public class MainActivity extends AppCompatActivity implements ILogger, GDriveSignIn.IGDriveSignInCompletedEventHandler {
 
     TextView console;
     private static String consoleText = "";
-
+    private GDriveSignIn mGDriveSignIn;
+    AquaService mService;
     public static MainActivity mainActivityInstance;
 
     @Override
@@ -47,32 +50,43 @@ public class MainActivity extends AppCompatActivity implements ILogger {
         this.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
-    AquaService mService;
-    boolean mServiceBound = false;
     private ServiceConnection mConnection = new ServiceConnection() {
-
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
             AquaService.AquaServiceBinder binder = (AquaService.AquaServiceBinder) service;
             mService = binder.getService();
-            mServiceBound = true;
-            try {
-                mService.setActivity(mainActivityInstance, mainActivityInstance);
-            } catch (Exception ex) {
-                log("Something went really wrong: " + ex.toString());
+            if(!mService.isInitialized()) {
+                try {
+                    mGDriveSignIn = new GDriveSignIn(mainActivityInstance, mainActivityInstance);
+                } catch (Exception ex) {
+                    log("Something went really wrong: " + ex.toString());
+                }
             }
-
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mServiceBound = false;
+            log("AquaService was disconnected");
+            mService = null;
         }
     };
 
 
+    public void restartService(){
+        Intent intent = new Intent(this, AquaService.class);
+        this.stopService(intent);
+        this.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
 
+
+    public void onGDriveSignInCompleted(){
+        GoogleApiClient gDriveAPI = mGDriveSignIn.getGDriveAPI();
+        try {
+            mService.init(gDriveAPI, this);
+        } catch (Exception ex) {
+            log("Something went really wrong: " + ex.toString());
+        }
+    }
 
     public void log(String text) {
         int maxConsoleLength = 4000;
@@ -111,17 +125,20 @@ public class MainActivity extends AppCompatActivity implements ILogger {
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mService.handleOnMainActivityResult(requestCode, resultCode);
+        if (this.mGDriveSignIn != null) {
+            this.mGDriveSignIn.handleOnMainActivityResult(requestCode, resultCode);
+        }
     }
+
 
 
     @Override
     protected void onDestroy() {
-        this.log("Main Activity is getting destroyed - Make sure that orientation change is disabled in the Android settings!");
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-        }
+//        this.log("Main Activity is getting destroyed - Make sure that orientation change is disabled in the Android settings!");
+//        try {
+//            Thread.sleep(5000);
+//        } catch (InterruptedException ex) {
+//        }
 
         this.unbindService(mConnection);
 
