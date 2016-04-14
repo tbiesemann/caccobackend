@@ -153,6 +153,7 @@ public class AquaService extends Service {
         this.mGDriveSyncTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
+                log("Starting timed GDrive sync");
                 synchronizeToGDrive();
             }
         }, 0, milliseconds);

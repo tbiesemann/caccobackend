@@ -51,37 +51,49 @@ public class GDriveUtilities {
         DriveFolder aquaFolder = getOrCreateFolder(rootFolder, "Aqua");
         DriveFolder locationFolder = getOrCreateFolder(aquaFolder, locationName);
         DriveFolder dailyReportsFolder = getOrCreateFolder(locationFolder, "DailyReports");
+        ArrayList<String> unchangedFiles = new ArrayList<String>();
 
         for (File file : monthlyFiles) {
-            this.syncFileToGDrive(locationFolder, file);
+            boolean hasChanged = this.syncFileToGDrive(locationFolder, file);
+            if(!hasChanged){
+                unchangedFiles.add(file.getName());
+            }
         }
         for (File file : dailyFiles) {
-            this.syncFileToGDrive(dailyReportsFolder, file);
+            boolean hasChanged = this.syncFileToGDrive(dailyReportsFolder, file);
+            if(!hasChanged){
+                unchangedFiles.add(file.getName());
+            }
+        }
+
+        log("" + unchangedFiles.size() + " files have not been modified:");
+        for(String filename : unchangedFiles){
+            log(filename);
         }
 
     }
 
 
-    private void syncFileToGDrive(DriveFolder parentFolder, File file) {
+    private boolean syncFileToGDrive(DriveFolder parentFolder, File file) {
         DriveFile driveFile = getOrCreateFile(parentFolder, file.getName());
         if (driveFile == null) {
             log("Error getting file '" + file.getName() + "' on GDrive");
-            return;
+            return false;
         }
 
         DriveResource.MetadataResult metadata = driveFile.getMetadata(mGoogleApiClient).await();
         long gDriveFileSize = metadata.getMetadata().getFileSize();
         long fileSize = file.length();
         if (fileSize == gDriveFileSize) {
-            log("File " + file.getName() + " with size " + gDriveFileSize + "is up to date and will not be synchronized to GDrive");
-            return;
+            //log("File " + file.getName() + " with size " + gDriveFileSize + "is up to date and will not be synchronized to GDrive");
+            return false;
         }
 
 
         if (fileSize < gDriveFileSize) {
             log("Error: " + file.getName() + " has size " + fileSize + " in file system and " + gDriveFileSize + " in GDrive. File in GDrive must not be larger! GDrive will be overwritten.");
         } else {
-            log("Writing " + fileSize + " bytes to " +  file.getName() + " in GDrive. Previus size in GDrive was " + gDriveFileSize);
+            log("Writing" + file.getName() +  "New size:" + fileSize + ". Old size:" + gDriveFileSize);
         }
 
         //Read data from file system
@@ -91,7 +103,7 @@ public class GDriveUtilities {
         DriveApi.DriveContentsResult result = driveFile.open(mGoogleApiClient, DriveFile.MODE_WRITE_ONLY, null).await();
         if (!result.getStatus().isSuccess()) {
             log("Cannot open file '" + file.getName() + "' for editing");
-            return;
+            return false;
         }
         DriveContents driveContents = result.getDriveContents();
 
@@ -116,8 +128,10 @@ public class GDriveUtilities {
 
         if (!status.getStatus().isSuccess()) {
             log("Error: Cannot commit changes to '" + file.getName() + "'");
-            return;
+            return false;
         }
+
+        return true;
 
     }
 
