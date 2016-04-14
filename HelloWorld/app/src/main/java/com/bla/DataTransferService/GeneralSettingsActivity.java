@@ -46,12 +46,7 @@ public class GeneralSettingsActivity extends AppCompatActivity {
                 editor.putInt("GDriveSyncIntervall", GDriveSyncIntervall);
                 editor.commit();
                 btnSaveSettings.setText("Saved...");
-                MainActivity.mainActivityInstance.restartService();
-//                try {
-//                    AquaService.getInstance().setActivity(MainActivity.mainActivityInstance, MainActivity.mainActivityInstance);
-//                } catch (Exception ex) {
-//                    btnSaveSettings.setText("Something went really wrong: " + ex.toString());
-//                }
+                MainActivity.mainActivityInstance.stopService();
             }
         });
 

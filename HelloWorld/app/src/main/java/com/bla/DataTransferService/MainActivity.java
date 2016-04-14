@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
         public void onServiceConnected(ComponentName className, IBinder service) {
             AquaService.AquaServiceBinder binder = (AquaService.AquaServiceBinder) service;
             mService = binder.getService();
-            if(!mService.isInitialized()) {
+            if (!mService.isInitialized()) {
                 try {
                     mGDriveSignIn = new GDriveSignIn(mainActivityInstance, mainActivityInstance);
                 } catch (Exception ex) {
@@ -72,14 +72,14 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
     };
 
 
-    public void restartService(){
+    public void stopService() {
         Intent intent = new Intent(this, AquaService.class);
         this.stopService(intent);
-        this.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        this.unbindService(mConnection);
     }
 
 
-    public void onGDriveSignInCompleted(){
+    public void onGDriveSignInCompleted() {
         GoogleApiClient gDriveAPI = mGDriveSignIn.getGDriveAPI();
         try {
             mService.init(gDriveAPI, this);
@@ -129,7 +129,6 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
             this.mGDriveSignIn.handleOnMainActivityResult(requestCode, resultCode);
         }
     }
-
 
 
     @Override

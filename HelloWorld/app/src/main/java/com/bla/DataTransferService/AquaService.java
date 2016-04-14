@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
@@ -152,6 +151,11 @@ public class AquaService extends Service {
     private void setupBluetooth() {
         log("Opening bluetooth...");
 
+        if(mBluetoothCreateConnectionThread != null){
+            log("Error: Race condition when initializing bluetooth");
+            return;
+        }
+
         mBluetoothCreateConnectionThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -213,7 +217,6 @@ public class AquaService extends Service {
             mBluetoothCreateConnectionThread.interrupt();
             mBluetoothCreateConnectionThread = null;
         }
-
     }
 
 }

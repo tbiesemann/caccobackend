@@ -54,6 +54,8 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
 
                 editor.commit();
                 btnSaveSettings.setText("Saved...");
+                MainActivity.mainActivityInstance.stopService();
+
             }
         });
 
