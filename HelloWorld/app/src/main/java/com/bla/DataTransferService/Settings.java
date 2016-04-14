@@ -1,14 +1,15 @@
 package com.bla.DataTransferService;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 
 
 public class Settings {
     private SharedPreferences settings;
 
-    public Settings(Activity activity){
-        this.settings = activity.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
+    public Settings(Context context){
+        this.settings = context.getSharedPreferences("DataTransferService", Activity.MODE_PRIVATE);
 
     }
 

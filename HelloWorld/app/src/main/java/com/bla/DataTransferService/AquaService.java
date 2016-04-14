@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -73,7 +72,7 @@ public class AquaService extends Service {
             mBluetoothCreateConnectionThread.interrupt();
             mBluetoothCreateConnectionThread = null;
         }
-        this.settings = new Settings(activity);
+        this.settings = new Settings(this.getApplicationContext());
 
         this.bluetoothUtilities = new BluetoothUtilities();
 
