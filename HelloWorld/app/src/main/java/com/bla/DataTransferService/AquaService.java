@@ -25,7 +25,6 @@ public class AquaService extends Service {
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
     private GDriveSignIn mGDriveSignIn;
-    private Activity activity;
     private Handler logHandler;
     private ILogger consoleLogger;
     private Thread mBluetoothCreateConnectionThread;
@@ -48,7 +47,6 @@ public class AquaService extends Service {
         log("Aqua Service was created " + mServiceCreationDate.toString());
         log("(Re)Starting Aqua Service " + version);
 
-        this.activity = activity;
         if (settings != null) {
             settings.destroy();
         }

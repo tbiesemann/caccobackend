@@ -79,7 +79,6 @@ public class GDriveSignIn {
 
 
     private void connect() {
-
         Thread backgroundThread = new Thread(new Runnable() {
             public void run() {
                 if (mGoogleApiClient.isConnected()) {
