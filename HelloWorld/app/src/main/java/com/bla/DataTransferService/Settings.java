@@ -25,7 +25,7 @@ public class Settings {
     }
 
     public String getDeviceName(){
-        return settings.getString("deviceName", "");
+        return settings.getString("deviceName", "HC-06");
     }
 
     public Integer getGDriveSyncIntervall(){

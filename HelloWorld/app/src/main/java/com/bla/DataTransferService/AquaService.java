@@ -10,7 +10,9 @@ import android.os.Handler;
 import android.os.Message;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -62,7 +64,7 @@ public class AquaService extends Service {
         if (mFileService != null) {
             mFileService.destroy();
         }
-        if(this.mGDriveSyncTimer != null){
+        if (this.mGDriveSyncTimer != null) {
             this.mGDriveSyncTimer.cancel();
             this.mGDriveSyncTimer = null;
         }
@@ -84,7 +86,7 @@ public class AquaService extends Service {
             public void handle() {
                 setupGDriveSyncIntervallTimer(settings.getGDriveSyncIntervall());
             }
-        });		
+        });
     }
 
 
@@ -148,7 +150,15 @@ public class AquaService extends Service {
 
     private void setupGDriveSyncIntervallTimer(final Integer IntervalInHours) {
         long milliseconds = IntervalInHours * 3600000;
-        log("Synchronizing with GDrive every " + IntervalInHours + " hours");
+
+        Calendar now = Calendar.getInstance();
+        now.add(Calendar.HOUR, IntervalInHours);
+        log("Synchronizing with GDrive every " + IntervalInHours + " hours. Next Sync will be at " + now.getTime());
+        if (this.mGDriveSyncTimer != null) {  //race condition
+            log("Error: race condition when setting up GDrive");
+            return;
+        }
+
         this.mGDriveSyncTimer = new Timer();
         this.mGDriveSyncTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -156,7 +166,7 @@ public class AquaService extends Service {
                 log("Starting timed GDrive sync");
                 synchronizeToGDrive();
             }
-        }, 0, milliseconds);
+        }, 1000, milliseconds);
     }
 
 
@@ -201,7 +211,6 @@ public class AquaService extends Service {
     public void handleIncomingData(String data) {
         this.mFileService.appendToDataFile(data);
     }
-
 
 
     public void handleOnMainActivityResult(final int requestCode, final int resultCode) {  //Needed for sign in to GDrive
