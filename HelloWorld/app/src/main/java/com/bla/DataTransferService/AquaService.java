@@ -30,7 +30,7 @@ public class AquaService extends Service {
     private GoogleApiClient mGDriveAPI;
     private Handler logHandler;
     private ILogger consoleLogger;
-    private Thread mBluetoothCreateConnectionThread;
+    private Timer mBluetoothRetryTimer;
     private Timer mGDriveSyncTimer;
 
 
@@ -132,7 +132,7 @@ public class AquaService extends Service {
         Calendar now = Calendar.getInstance();
         now.add(Calendar.HOUR, IntervalInHours);
         log("Synchronizing with GDrive every " + IntervalInHours + " hours. Next Sync will be at " + now.getTime());
-        if (this.mGDriveSyncTimer != null) {  //race condition
+        if (this.mGDriveSyncTimer != null) {
             log("Error: race condition when setting up GDrive");
             return;
         }
@@ -151,31 +151,24 @@ public class AquaService extends Service {
     private void setupBluetooth() {
         log("Opening bluetooth...");
 
-        if(mBluetoothCreateConnectionThread != null){
+        if (mBluetoothRetryTimer != null) {
             log("Error: Race condition when initializing bluetooth");
             return;
         }
 
-        mBluetoothCreateConnectionThread = new Thread(new Runnable() {
+        this.mBluetoothRetryTimer = new Timer();
+        this.mBluetoothRetryTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                if (bluetoothUtilities == null) {
-                    return;
-                }
-
                 boolean success = bluetoothUtilities.establishConnection();
                 if (!success) {
-                    try {
-                        log("Waiting 60 seconds before retry");
-                        Thread.sleep(60000);
-                    } catch (InterruptedException ex) {
-                        return;
-                    }
-                    setupBluetooth();
+                    log("Waiting 60 seconds before retry");
+                } else {
+                    mBluetoothRetryTimer.cancel();
                 }
             }
-        });
-        mBluetoothCreateConnectionThread.start();
+        }, 1000, 60000);
+
     }
 
 
@@ -213,9 +206,9 @@ public class AquaService extends Service {
             this.mGDriveSyncTimer.cancel();
             this.mGDriveSyncTimer = null;
         }
-        if (mBluetoothCreateConnectionThread != null) {
-            mBluetoothCreateConnectionThread.interrupt();
-            mBluetoothCreateConnectionThread = null;
+        if (mBluetoothRetryTimer != null) {
+            mBluetoothRetryTimer.cancel();
+            mBluetoothRetryTimer = null;
         }
     }
 
