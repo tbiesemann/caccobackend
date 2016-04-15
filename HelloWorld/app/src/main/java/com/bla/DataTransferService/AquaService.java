@@ -138,7 +138,8 @@ public class AquaService extends Service {
         }
 
         this.mGDriveSyncTimer = new Timer();
-        this.mGDriveSyncTimer.scheduleAtFixedRate(new TimerTask() {
+
+        this.mGDriveSyncTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 log("Starting timed GDrive sync");
@@ -152,22 +153,46 @@ public class AquaService extends Service {
         log("Opening bluetooth...");
 
         if (mBluetoothRetryTimer != null) {
+            mBluetoothRetryTimer.cancel();
             log("Error: Race condition when initializing bluetooth");
             return;
         }
 
-        this.mBluetoothRetryTimer = new Timer();
-        this.mBluetoothRetryTimer.scheduleAtFixedRate(new TimerTask() {
+//        final Handler handler = new Handler();
+        TimerTask timertask = new TimerTask() {
             @Override
             public void run() {
-                boolean success = bluetoothUtilities.establishConnection();
-                if (!success) {
-                    log("Waiting 60 seconds before retry");
-                } else {
-                    mBluetoothRetryTimer.cancel();
-                }
+//                handler.post(new Runnable() {
+//                    public void run() {
+                        boolean success = bluetoothUtilities.establishConnection();
+                        if (!success) {
+                            log("Waiting 60 seconds before retry");
+                        } else {
+                            mBluetoothRetryTimer.cancel();
+                            mBluetoothRetryTimer = null;
+                        }
+      //              }
+    //            });
             }
-        }, 1000, 60000);
+        };
+        mBluetoothRetryTimer = new Timer();
+        mBluetoothRetryTimer.schedule(timertask, 0, 60000);
+
+
+//
+//
+//        this.mBluetoothRetryTimer = new Timer();
+//        this.mBluetoothRetryTimer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                boolean success = bluetoothUtilities.establishConnection();
+//                if (!success) {
+//                    log("Waiting 60 seconds before retry");
+//                } else {
+//                    mBluetoothRetryTimer.cancel();
+//                }
+//            }
+//        }, 1000, 60000);
 
     }
 
