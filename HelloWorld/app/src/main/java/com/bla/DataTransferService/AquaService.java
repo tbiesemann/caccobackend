@@ -29,7 +29,6 @@ public class AquaService extends Service {
     public Settings settings;
     private GoogleApiClient mGDriveAPI;
     private Handler logHandler;
-    private ILogger consoleLogger;
     private Timer mBluetoothRetryTimer;
     private Timer mGDriveSyncTimer;
 
@@ -44,8 +43,7 @@ public class AquaService extends Service {
     }
 
 
-    public void init(GoogleApiClient gDriveAPI, ILogger logger) throws Exception {
-        this.consoleLogger = logger;
+    public void init(GoogleApiClient gDriveAPI) throws Exception {
         log("Aqua Service was created " + mServiceCreationDate.toString());
 
         if (this.mIsInitialized) {
@@ -90,7 +88,9 @@ public class AquaService extends Service {
             public void handleMessage(Message msg) {
                 final String text = msg.obj.toString();
                 //Log to main activity
-                consoleLogger.log(text);
+                if(MainActivity.mainActivityInstance != null) {
+                    MainActivity.mainActivityInstance.log(text);
+                }
 
                 if (mFileService != null) {
                     mFileService.appendToLogFile(text);

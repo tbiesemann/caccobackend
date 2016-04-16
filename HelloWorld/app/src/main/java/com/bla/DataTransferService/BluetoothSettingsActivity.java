@@ -30,7 +30,7 @@ public class BluetoothSettingsActivity extends AppCompatActivity {
         txtBluetoothDeviceName = (EditText) findViewById(R.id.txtBluetoothDeviceName);
         cbxUseWindowsLineEndings = (CheckBox) findViewById(R.id.cbxUseRN);
         btnShowPairedDevices = (Button) findViewById(R.id.btnShowPairedDevices);
-        console = (TextView) findViewById(R.id.txtConsole);
+        console = (TextView) findViewById(R.id.txtBluetoothConsole);
 
         //Read from Settings
         SharedPreferences settings = getSharedPreferences("DataTransferService", MODE_PRIVATE);

@@ -45,7 +45,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:id="@+id/txtConsole"
+        android:id="@+id/txtBluetoothConsole"
         android:minLines="@integer/consoleLines"
         android:lines="10"
         android:layout_below="@+id/btnShowPairedDevices"

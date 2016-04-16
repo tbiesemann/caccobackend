@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
-public class MainActivity extends AppCompatActivity implements ILogger, GDriveSignIn.IGDriveSignInCompletedEventHandler {
+public class MainActivity extends AppCompatActivity implements GDriveSignIn.IGDriveSignInCompletedEventHandler {
 
     TextView console;
     private static String consoleText = "";
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
     public void onGDriveSignInCompleted() {
         GoogleApiClient gDriveAPI = mGDriveSignIn.getGDriveAPI();
         try {
-            mService.init(gDriveAPI, this);
+            mService.init(gDriveAPI);
         } catch (Exception ex) {
             log("Something went really wrong: " + ex.toString());
         }
@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
 
     public void log(String text) {
         int maxConsoleLength = 4000;
-
         int length = consoleText.length();
         if (length > maxConsoleLength) {
             consoleText = consoleText.substring(0, maxConsoleLength);
@@ -136,6 +135,11 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
         }
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
     @Override
     protected void onDestroy() {
