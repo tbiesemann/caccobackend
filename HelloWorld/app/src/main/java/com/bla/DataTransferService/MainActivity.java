@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
                 } catch (Exception ex) {
                     log("Something went really wrong: " + ex.toString());
                 }
+            } else {
+                log("AquaService was already on " + mService.getServiceCreationDateTime().toString());
             }
         }
 

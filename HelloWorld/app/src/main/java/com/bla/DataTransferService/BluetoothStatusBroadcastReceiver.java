@@ -13,7 +13,7 @@ public class BluetoothStatusBroadcastReceiver extends BroadcastReceiver {
 
 
         String action = intent.getAction();
-        AquaService.getInstance().log("Bluetooth Intent Received:" + action);
+        AquaService.getInstance().log("Bluetooth Intent Received: " + action.substring(33));  //Cut off namespace from intent (33 chars)
 
         if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)){
             AquaService.getInstance().log("A device was connected via bluetooth");

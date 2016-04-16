@@ -22,8 +22,8 @@ public class AquaService extends Service {
 
     private boolean mIsInitialized = false;
     private boolean mIsDestroyed = false;
-    public Date mServiceCreationDate;
-    public String version = "v0.3";
+    private Date mServiceCreationDate;
+    public String version = "v0.4";
     private FileService mFileService;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
@@ -137,6 +137,9 @@ public class AquaService extends Service {
             return;
         }
 
+        //Hack to reproduce Timer issue
+        milliseconds = 120000; //Sync every two minutes
+
         this.mGDriveSyncTimer = new Timer();
 
         this.mGDriveSyncTimer.schedule(new TimerTask() {
@@ -199,6 +202,11 @@ public class AquaService extends Service {
 
     public void onBluetoothDeviceDisconnected(BluetoothDevice device) {
         setupBluetooth();
+    }
+
+
+    public Date getServiceCreationDateTime(){
+        return mServiceCreationDate;
     }
 
 
