@@ -137,9 +137,6 @@ public class AquaService extends Service {
             return;
         }
 
-        //Hack to reproduce Timer issue
-        milliseconds = 240000; //Sync every 4 minutes
-
         this.mGDriveSyncTimer = new Timer();
 
         this.mGDriveSyncTimer.schedule(new TimerTask() {
