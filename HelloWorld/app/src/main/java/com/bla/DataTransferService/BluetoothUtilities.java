@@ -22,6 +22,7 @@ public class BluetoothUtilities {
     private OutputStream mOutputStream;
     private InputStream mInputStream;
     private BluetoothDevice mDevice;
+
     public BluetoothUtilities() {
         this.log("Creating bluetooth utilities");
     }
@@ -110,27 +111,21 @@ public class BluetoothUtilities {
             public void run() {
                 while (!Thread.currentThread().isInterrupted() && !stopWorker) {
                     try {
-                        int bytesAvailable = mInputStream.available();
-                        if (bytesAvailable > 0) {
-                            byte[] packetBytes = new byte[bytesAvailable];
-                            mInputStream.read(packetBytes);
 
-                            //log(convertBytesToString(packetBytes)); //for analysis of missing bytes
-
-                            for (int i = 0; i < bytesAvailable; i++) {
-                                byte b = packetBytes[i];
-                                boolean useWindowsLineEndings = AquaService.getInstance().settings.getUseWindowsLineEndings();
-
-                                if (((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10))) {
-                                    byte[] encodedBytes = new byte[readBufferPosition];
-                                    System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
-                                    final String data = new String(encodedBytes, "US-ASCII");
-                                    readBufferPosition = 0;
-                                    log("" + data.length() + " bytes");
-                                    AquaService.getInstance().handleIncomingData(data);
-                                } else {
-                                    readBuffer[readBufferPosition++] = b;
-                                }
+                        byte[] packetBytes = new byte[128];
+                        int bytesAvailable = mInputStream.read(packetBytes);
+                        for (int i = 0; i < bytesAvailable; i++) {
+                            byte b = packetBytes[i];
+                            boolean useWindowsLineEndings = AquaService.getInstance().settings.getUseWindowsLineEndings();
+                            if (((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10))) {
+                                byte[] encodedBytes = new byte[readBufferPosition];
+                                System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
+                                final String data = new String(encodedBytes, "US-ASCII");
+                                readBufferPosition = 0;
+                                log("" + data.length() + " bytes");
+                                AquaService.getInstance().handleIncomingData(data);
+                            } else {
+                                readBuffer[readBufferPosition++] = b;
                             }
                         }
                     } catch (IOException ex) {
@@ -143,11 +138,11 @@ public class BluetoothUtilities {
     }
 
 
-    public String convertBytesToString(byte[] data){
+    public String convertBytesToString(byte[] data) {
         String text = "";
         try {
             text = new String(data, "US-ASCII");
-        } catch (UnsupportedEncodingException ex){
+        } catch (UnsupportedEncodingException ex) {
             log("Error converting to ascii");
         }
         return text;

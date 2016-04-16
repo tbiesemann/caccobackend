@@ -138,7 +138,7 @@ public class AquaService extends Service {
         }
 
         //Hack to reproduce Timer issue
-        milliseconds = 120000; //Sync every two minutes
+        milliseconds = 240000; //Sync every 4 minutes
 
         this.mGDriveSyncTimer = new Timer();
 
@@ -160,7 +160,6 @@ public class AquaService extends Service {
             log("Error: Race condition when initializing bluetooth");
         }
 
-//        final Handler handler = new Handler();
         TimerTask timertask = new TimerTask() {
             @Override
             public void run() {
