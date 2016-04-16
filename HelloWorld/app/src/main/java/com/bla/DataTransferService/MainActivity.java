@@ -118,6 +118,10 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
             case (R.id.menu_general):
                 this.startActivity(new Intent(this, GeneralSettingsActivity.class));
                 return true;
+            case (R.id.menu_clear_log):
+                consoleText = "cleared";
+                console.setText(consoleText);
+                return false;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -135,14 +139,7 @@ public class MainActivity extends AppCompatActivity implements ILogger, GDriveSi
 
     @Override
     protected void onDestroy() {
-//        this.log("Main Activity is getting destroyed - Make sure that orientation change is disabled in the Android settings!");
-//        try {
-//            Thread.sleep(5000);
-//        } catch (InterruptedException ex) {
-//        }
-
         this.unbindService(mConnection);
-
         super.onDestroy();
     }
 

@@ -117,7 +117,7 @@ public class FileService {
             month = "0" + month;
         }
         String day = "" + c.get(Calendar.DAY_OF_MONTH);
-        if (Calendar.DAY_OF_MONTH < 10) {
+        if (c.get(Calendar.DAY_OF_MONTH) < 10) {
             day = "0" + day;
         }
         String logFileName = "log_" + AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + "_" + day + ".txt";
@@ -141,7 +141,7 @@ public class FileService {
             month = "0" + month;
         }
         String day = "" + c.get(Calendar.DAY_OF_MONTH);
-        if (Calendar.DAY_OF_MONTH < 10) {
+        if (c.get(Calendar.DAY_OF_MONTH) < 10) {
             day = "0" + day;
         }
         String monthlyDataFileName = AquaService.getInstance().settings.getLocation() + "_" + year + "_" + month + ".txt";
@@ -181,38 +181,6 @@ public class FileService {
             e.printStackTrace();
         }
     }
-
-//
-//    /**
-//     * If file already exists, content is appended to existing file
-//     *
-//     * @param sFileName
-//     * @param sBody
-//     * @return
-//     */
-//    private String writeToFile(String sFileName, String sBody) {
-//        File oWorkingDirectory = getAquaDirectory();
-//        String sFilePath = "";
-//
-//        try {
-//
-//            File oFile = new File(oWorkingDirectory, sFileName);
-//            if (!oFile.exists()) {
-//                oFile.createNewFile();
-//            }
-//
-//            FileWriter writer = new FileWriter(oFile);
-//            writer.append(sBody);
-//            writer.flush();
-//            writer.close();
-//            sFilePath = oWorkingDirectory + File.separator + sFileName;
-//            System.out.println("File saved in " + sFilePath);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return sFilePath;
-//    }
-
 
     public void destroy() {
         this.oContext = null;

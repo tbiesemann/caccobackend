@@ -158,45 +158,23 @@ public class AquaService extends Service {
         if (mBluetoothRetryTimer != null) {
             mBluetoothRetryTimer.cancel();
             log("Error: Race condition when initializing bluetooth");
-            return;
         }
 
 //        final Handler handler = new Handler();
         TimerTask timertask = new TimerTask() {
             @Override
             public void run() {
-//                handler.post(new Runnable() {
-//                    public void run() {
-                        boolean success = bluetoothUtilities.establishConnection();
-                        if (!success) {
-                            log("Waiting 60 seconds before retry");
-                        } else {
-                            mBluetoothRetryTimer.cancel();
-                            mBluetoothRetryTimer = null;
-                        }
-      //              }
-    //            });
+                boolean success = bluetoothUtilities.establishConnection();
+                if (!success) {
+                    log("Waiting 60 seconds before retry");
+                } else {
+                    mBluetoothRetryTimer.cancel();
+                    mBluetoothRetryTimer = null;
+                }
             }
         };
         mBluetoothRetryTimer = new Timer();
         mBluetoothRetryTimer.schedule(timertask, 0, 60000);
-
-
-//
-//
-//        this.mBluetoothRetryTimer = new Timer();
-//        this.mBluetoothRetryTimer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                boolean success = bluetoothUtilities.establishConnection();
-//                if (!success) {
-//                    log("Waiting 60 seconds before retry");
-//                } else {
-//                    mBluetoothRetryTimer.cancel();
-//                }
-//            }
-//        }, 1000, 60000);
-
     }
 
 
@@ -205,7 +183,7 @@ public class AquaService extends Service {
     }
 
 
-    public Date getServiceCreationDateTime(){
+    public Date getServiceCreationDateTime() {
         return mServiceCreationDate;
     }
 

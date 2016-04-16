@@ -6,6 +6,7 @@
     <string name="menu_bluetooth">Bluetooth Settings</string>
     <string name="menu_logfile">Show Log File</string>
     <string name="menu_general">General Settings</string>
+    <string name="menu_clear_log">Clear Log</string>
 
     <string name="title_activity_bluetooth_settings">Settings</string>
 
