@@ -6,15 +6,20 @@ import android.content.Intent;
 
 
 public class PlugInControlReceiver extends BroadcastReceiver {
-    public void onReceive(Context context , Intent intent) {
+    public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
-        if(action.equals(Intent.ACTION_POWER_CONNECTED)) {
-            AquaService.getInstance().log("Warning: power is connected again");
+        if (action.equals(Intent.ACTION_POWER_CONNECTED)) {
+            AquaService service = AquaService.getInstance();
+            if (service != null) {
+                service.log("Warning: power is connected again");
+            }
 
-        }
-        else if(action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
-            AquaService.getInstance().log("Warning: power was disconnected");
+        } else if (action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
+            AquaService service = AquaService.getInstance();
+            if (service != null) {
+                AquaService.getInstance().log("Warning: power was disconnected");
+            }
         }
     }
 }
