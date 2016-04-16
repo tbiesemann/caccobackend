@@ -23,7 +23,7 @@ public class AquaService extends Service {
     private boolean mIsInitialized = false;
     private boolean mIsDestroyed = false;
     private Date mServiceCreationDate;
-    public String version = "v0.4";
+    public String version = "v0.5";
     private FileService mFileService;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
