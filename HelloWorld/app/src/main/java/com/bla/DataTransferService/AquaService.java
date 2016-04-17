@@ -126,8 +126,12 @@ public class AquaService extends Service {
     }
 
 
+    private int minutesTillNextGDriveSync;
     private void setupGDriveSyncIntervallTimer(final Integer IntervalInHours) {
         long milliseconds = IntervalInHours * 3600000;
+
+        minutesTillNextGDriveSync = 0;
+
 
         Calendar now = Calendar.getInstance();
         now.add(Calendar.HOUR, IntervalInHours);
@@ -142,10 +146,19 @@ public class AquaService extends Service {
         this.mGDriveSyncTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                log("Starting timed GDrive sync");
-                synchronizeToGDrive();
+                minutesTillNextGDriveSync--;
+                if (minutesTillNextGDriveSync <= 0) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.add(Calendar.HOUR, IntervalInHours);
+                    log("Starting timed GDrive sync. Next Sync will be at " + cal.getTime());
+
+                    synchronizeToGDrive();
+                    minutesTillNextGDriveSync = IntervalInHours * 60;
+                } else {
+                    log("" + minutesTillNextGDriveSync + " minutes till next sync ");
+                }
             }
-        }, 1000, milliseconds);
+        }, 0, 60000);
     }
 
 
