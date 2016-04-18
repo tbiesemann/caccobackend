@@ -75,9 +75,11 @@ public class MainActivity extends AppCompatActivity implements GDriveSignIn.IGDr
 
 
     public void stopService() {
-        Intent intent = new Intent(this, AquaService.class);
-        this.stopService(intent);
-        this.unbindService(mConnection);
+        if(AquaService.getInstance() != null && AquaService.getInstance().isInitialized()) {
+            Intent intent = new Intent(this, AquaService.class);
+            this.stopService(intent);
+            this.unbindService(mConnection);
+        }
     }
 
 

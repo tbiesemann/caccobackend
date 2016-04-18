@@ -1,12 +1,14 @@
 package com.bla.DataTransferService;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.bluetooth.BluetoothDevice;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PowerManager;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
@@ -20,10 +22,10 @@ import java.util.TimerTask;
 
 public class AquaService extends Service {
 
+    private PowerManager.WakeLock mWakeLock;
     private boolean mIsInitialized = false;
-    private boolean mIsDestroyed = false;
     private Date mServiceCreationDate;
-    public String version = "v0.5";
+    public String version = "v0.6";
     private FileService mFileService;
     public BluetoothUtilities bluetoothUtilities;
     public Settings settings;
@@ -38,7 +40,7 @@ public class AquaService extends Service {
 
     public AquaService() {
         mServiceCreationDate = new Date();
-        instance = this;
+        mInstance = this;
         initializeLogger();
     }
 
@@ -51,6 +53,8 @@ public class AquaService extends Service {
             return;
         }
 
+        this.acquireWakeLock();
+
         this.mIsInitialized = true;
 
         mGDriveAPI = gDriveAPI;
@@ -60,6 +64,13 @@ public class AquaService extends Service {
         setupBluetooth();
         setupGDriveSyncIntervallTimer(settings.getGDriveSyncIntervall());
     }
+
+    public void acquireWakeLock(){
+        PowerManager powerManager = (PowerManager) this.getApplicationContext().getSystemService(Context.POWER_SERVICE);
+        this.mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "aquaWakelock()");
+        this.mWakeLock.acquire();
+    }
+
 
     public boolean isInitialized() {
         return this.mIsInitialized;
@@ -107,7 +118,7 @@ public class AquaService extends Service {
         }
     }
 
-    private static AquaService instance;
+    private static AquaService mInstance;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -122,7 +133,7 @@ public class AquaService extends Service {
 
 
     static public AquaService getInstance() {
-        return instance;
+        return mInstance;
     }
 
 
@@ -212,7 +223,7 @@ public class AquaService extends Service {
         log("Service being destroyed...");
         super.onDestroy();
 
-        this.mIsDestroyed = true;
+        this.mIsInitialized = false;
         if (settings != null) {
             settings.destroy();
         }
@@ -229,6 +240,9 @@ public class AquaService extends Service {
         if (mBluetoothRetryTimer != null) {
             mBluetoothRetryTimer.cancel();
             mBluetoothRetryTimer = null;
+        }
+        if(this.mWakeLock != null){
+            this.mWakeLock.release();
         }
     }
 
