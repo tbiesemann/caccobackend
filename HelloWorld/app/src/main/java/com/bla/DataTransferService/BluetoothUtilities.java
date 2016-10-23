@@ -22,14 +22,23 @@ public class BluetoothUtilities {
     private OutputStream mOutputStream;
     private InputStream mInputStream;
     private BluetoothDevice mDevice;
+    private IAquaService AquaServiceMock;
 
-    public BluetoothUtilities() {
+    public BluetoothUtilities( IAquaService AquaServiceMock) {
+        this.AquaServiceMock = AquaServiceMock;
         this.log("Creating bluetooth utilities");
+    }
+
+    private IAquaService getAquaServiceInstance(){
+        if(this.AquaServiceMock != null){
+            return this.AquaServiceMock;
+        }
+        return AquaService.getInstance();
     }
 
 
     private void log(String text) {
-        AquaService.getInstance().log(text);
+        this.getAquaServiceInstance().log(text);
     }
 
 
@@ -61,7 +70,7 @@ public class BluetoothUtilities {
         //Make sure bluetooth is turned on
         enableBluetoothAdapter();
 
-        String deviceName = AquaService.getInstance().settings.getDeviceName();
+        String deviceName = this.getAquaServiceInstance().getDeviceName();
 
         mDevice = this.getDeviceByName(deviceName);
         if (mDevice == null) {
@@ -99,11 +108,44 @@ public class BluetoothUtilities {
 
 
     Thread workerThread;
-    byte[] readBuffer;
-    int readBufferPosition;
+    byte[] readBuffer = new byte[1024];;
+    int readBufferPosition = 0;
     volatile boolean stopWorker;
 
-    void beginListenForData() {
+    public void handleBytesReceived(byte[] packetBytes, int bytesAvailable) throws IOException{
+        boolean isCompleteLine = false;
+        for (int i = 0; i < bytesAvailable; i++) {
+            byte b = packetBytes[i];
+            boolean useWindowsLineEndings = getAquaServiceInstance().getUseWindowsLineEndings();
+            if (!useWindowsLineEndings && (b == 10)){
+                readBuffer[readBufferPosition++] = 10;
+                isCompleteLine = true;
+            } else if (useWindowsLineEndings){
+                if ((i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10)){
+                    readBuffer[readBufferPosition++] = 13;
+                    readBuffer[readBufferPosition++] = 10;
+                    isCompleteLine = true;
+                    i++;
+                } else if (b==10 && readBufferPosition > 0 && readBuffer[readBufferPosition - 1] == 13){
+                    readBuffer[readBufferPosition++] = 10;
+                    isCompleteLine = true;
+                }
+            }
+            if (isCompleteLine){
+                byte[] encodedBytes = new byte[readBufferPosition];
+                System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
+                final String data = new String(encodedBytes, "US-ASCII");
+                readBufferPosition = 0;
+                log("" + data.length() + " bytes");
+                getAquaServiceInstance().handleIncomingData(data);
+                isCompleteLine = false;
+            } else {
+                readBuffer[readBufferPosition++] = b;
+            }
+        }
+    }
+
+    public void beginListenForData() {
         stopWorker = false;
         readBufferPosition = 0;
         readBuffer = new byte[1024];
@@ -114,20 +156,22 @@ public class BluetoothUtilities {
 
                         byte[] packetBytes = new byte[128];
                         int bytesAvailable = mInputStream.read(packetBytes);
-                        for (int i = 0; i < bytesAvailable; i++) {
-                            byte b = packetBytes[i];
-                            boolean useWindowsLineEndings = AquaService.getInstance().settings.getUseWindowsLineEndings();
-                            if (((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10))) {
-                                byte[] encodedBytes = new byte[readBufferPosition];
-                                System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
-                                final String data = new String(encodedBytes, "US-ASCII");
-                                readBufferPosition = 0;
-                                log("" + data.length() + " bytes");
-                                AquaService.getInstance().handleIncomingData(data);
-                            } else {
-                                readBuffer[readBufferPosition++] = b;
-                            }
-                        }
+
+                        handleBytesReceived(packetBytes, bytesAvailable);
+//                        for (int i = 0; i < bytesAvailable; i++) {
+//                            byte b = packetBytes[i];
+//                            boolean useWindowsLineEndings = getAquaServiceInstance().getUseWindowsLineEndings();
+//                            if (((!useWindowsLineEndings) && (b == 10)) || ((useWindowsLineEndings) && (i < bytesAvailable - 1) && (b == 13) && (packetBytes[i + 1] == 10))) {
+//                                byte[] encodedBytes = new byte[readBufferPosition];
+//                                System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
+//                                final String data = new String(encodedBytes, "US-ASCII");
+//                                readBufferPosition = 0;
+//                                log("" + data.length() + " bytes");
+//                                getAquaServiceInstance().handleIncomingData(data);
+//                            } else {
+//                                readBuffer[readBufferPosition++] = b;
+//                            }
+//                        }
                     } catch (IOException ex) {
                         stopWorker = true;
                     }
@@ -137,16 +181,6 @@ public class BluetoothUtilities {
         workerThread.start();
     }
 
-
-    public String convertBytesToString(byte[] data) {
-        String text = "";
-        try {
-            text = new String(data, "US-ASCII");
-        } catch (UnsupportedEncodingException ex) {
-            log("Error converting to ascii");
-        }
-        return text;
-    }
 
 
     public List<String> getPairedDevicesAsString() {

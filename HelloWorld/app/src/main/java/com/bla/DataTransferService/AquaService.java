@@ -20,7 +20,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class AquaService extends Service {
+public class AquaService extends Service implements IAquaService {
 
     private PowerManager.WakeLock mWakeLock;
     private boolean mIsInitialized = false;
@@ -44,6 +44,13 @@ public class AquaService extends Service {
         initializeLogger();
     }
 
+    public boolean getUseWindowsLineEndings(){
+        return this.settings.getUseWindowsLineEndings();
+    }
+    public String getDeviceName(){
+        return this.settings.getDeviceName();
+    }
+
 
     public void init(GoogleApiClient gDriveAPI) throws Exception {
         log("Aqua Service was created " + mServiceCreationDate.toString());
@@ -59,7 +66,7 @@ public class AquaService extends Service {
 
         mGDriveAPI = gDriveAPI;
         this.settings = new Settings(this.getApplicationContext());
-        this.bluetoothUtilities = new BluetoothUtilities();
+        this.bluetoothUtilities = new BluetoothUtilities(null);
         this.mFileService = new FileService(this.getApplicationContext(), this.settings.getLocation());
         setupBluetooth();
         setupGDriveSyncIntervallTimer(settings.getGDriveSyncIntervall());
