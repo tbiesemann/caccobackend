@@ -113,9 +113,9 @@ public class FileService {
         Calendar c = Calendar.getInstance();
         String year = "" + (c.get(Calendar.YEAR));
         String month = "" + (c.get(Calendar.MONTH) + 1);
-//        if (c.get(Calendar.MONTH) < 10) {
-//            month = "0" + month;
-//        }
+        if (c.get(Calendar.MONTH) < 10) {
+            month = "0" + month;
+        }
         String day = "" + c.get(Calendar.DAY_OF_MONTH);
         if (c.get(Calendar.DAY_OF_MONTH) < 10) {
             day = "0" + day;
@@ -137,9 +137,9 @@ public class FileService {
         Calendar c = Calendar.getInstance();
         String year = "" + (c.get(Calendar.YEAR));
         String month = "" + (c.get(Calendar.MONTH) + 1);
-        if (c.get(Calendar.MONTH) < 10) {
-            month = "0" + month;
-        }
+//        if (c.get(Calendar.MONTH) < 10) {
+//            month = "0" + month;
+//        }
         String day = "" + c.get(Calendar.DAY_OF_MONTH);
         if (c.get(Calendar.DAY_OF_MONTH) < 10) {
             day = "0" + day;
