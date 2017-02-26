@@ -185,7 +185,7 @@ public class AquaService extends Service implements IAquaService {
 
         if (mBluetoothRetryTimer != null) {
             mBluetoothRetryTimer.cancel();
-            log("Error: Race condition when initializing bluetooth");
+            log("Duplicate Bluetooth Initialization started. Cancelling first Initialization"); //might happen if device not yet found an bluetooth adapter gets turned off
         }
 
         TimerTask timertask = new TimerTask() {
